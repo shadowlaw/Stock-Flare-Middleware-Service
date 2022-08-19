@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.shadow</groupId>
-	<artifactId>api-artifact</artifactId>
+	<artifactId>jse-notification-service</artifactId>
 	<version>0.0.0</version>
-	<name>Spring Boot 2.6.3 Template</name>
-	<description>A Spring Boot 2.6.3 template project to help bootstrap the common setup of an api.</description>
+	<name>JSE Notification Service</name>
+	<description>Notification management API service for JSE info system</description>
 	<properties>
 		<java.version>11</java.version>
 	</properties>
