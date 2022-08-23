@@ -5,7 +5,7 @@ import lombok.SneakyThrows;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import java.lang.reflect.Method;
+
 import java.util.ArrayList;
 
 public class ValidEnumConstantValidator  implements ConstraintValidator<ValidEnumConstant, String> {
