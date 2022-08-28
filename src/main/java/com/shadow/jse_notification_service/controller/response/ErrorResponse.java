@@ -13,15 +13,14 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ErrorResponse {
+public class ErrorResponse extends Response {
     String timestamp;
-    int status;
     List<Error> errors;
     String path;
 
-    public ErrorResponse(int status, List<Error> errors, String path) {
+    public ErrorResponse(int status, List<Error> errors, String path){
+        super(status);
         this.timestamp = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX").format(new Timestamp(System.currentTimeMillis()));
-        this.status = status;
         this.errors = errors;
         this.path = path;
     }

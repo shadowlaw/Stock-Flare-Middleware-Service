@@ -9,8 +9,8 @@ import org.springframework.hateoas.RepresentationModel;
 @AllArgsConstructor
 @NoArgsConstructor
 @Data
-public class ExampleResponse extends RepresentationModel<ExampleResponse> {
+public class Response extends RepresentationModel<Response> {
 
     @Schema(description = "Response Status Code")
-    private String status;
+    private int status;
 }

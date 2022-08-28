@@ -2,7 +2,7 @@ package com.shadow.jse_notification_service.controller;
 
 import com.shadow.jse_notification_service.controller.request.NewsSubscriptionRequest;
 import com.shadow.jse_notification_service.controller.response.ErrorResponse;
-import com.shadow.jse_notification_service.controller.response.ExampleResponse;
+import com.shadow.jse_notification_service.controller.response.Response;
 import com.shadow.jse_notification_service.service.SubscriptionManagementService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -38,7 +38,7 @@ public class SubscriptionController {
 
     @Operation(summary = "Create news subscription",description = "Create subscription to symbol news for user", tags = "Notification subscription endpoints")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Notification Subscription Created", content = @Content(schema = @Schema(implementation = ExampleResponse.class), mediaType =  MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "201", description = "Notification Subscription Created", content = @Content(schema = @Schema(implementation = Response.class), mediaType =  MediaType.APPLICATION_JSON_VALUE)),
             @ApiResponse(responseCode = "400", description = "The user submitted Bad Request.", content = @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = MediaType.APPLICATION_JSON_VALUE)),
             @ApiResponse(responseCode = "500", description = "Internal Error", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
     })
@@ -56,8 +56,9 @@ public class SubscriptionController {
         subscriptionManagementService.createNewsNotification(user_id, symbol, subscriptionRequest.getNewsType(),
                 subscriptionRequest.getMediumType(), subscriptionRequest.getMediumId());
 
+        Response response = new Response(HttpStatus.CREATED.value());
 
-        return ResponseEntity.status(HttpStatus.CREATED).build();
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
 // [DELETE] api/<symbol>/news/subscription
