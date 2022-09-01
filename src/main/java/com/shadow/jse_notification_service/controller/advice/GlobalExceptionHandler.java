@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.ConstraintViolationException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,13 +22,19 @@ public class GlobalExceptionHandler {
 
     Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler({MethodArgumentNotValidException.class})
-    public ResponseEntity<ErrorResponse> handleValidationException(MethodArgumentNotValidException validException, HttpServletRequest request){
+    @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class})
+    public ResponseEntity<ErrorResponse> handleValidationException(Exception validException, HttpServletRequest request){
         List<Error> errors = new ArrayList<>();
 
-        validException.getBindingResult()
-                .getFieldErrors()
-                .forEach(error -> errors.add(new Error("Validation Error", String.format("Field: %s - %s", error.getField(), error.getDefaultMessage()))));
+        if (validException instanceof ConstraintViolationException) {
+            errors.add(new Error("Validation Error", validException.getMessage()));
+        } else {
+            MethodArgumentNotValidException exception = (MethodArgumentNotValidException) validException;
+            exception.getBindingResult()
+                    .getFieldErrors()
+                    .forEach(error -> errors.add(new Error("Validation Error", String.format("Field: %s - %s", error.getField(), error.getDefaultMessage()))));
+        }
+
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), errors, request.getRequestURI());
         logger.error("Request Validation Error: {}", validException.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
