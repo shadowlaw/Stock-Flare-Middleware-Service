@@ -1,3 +1,3 @@
-# JSE Notification Service
+# JSE Middleware Service v0.0.0
 
-Notification management API service for JSE info system
+Middleware API service for JSE info system.
