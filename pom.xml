@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.shadow</groupId>
-	<artifactId>jse-notification-service</artifactId>
+	<artifactId>jse-middleware-service</artifactId>
 	<version>0.0.0</version>
-	<name>JSE Notification Service</name>
-	<description>Notification management API service for JSE info system</description>
+	<name>JSE Middleware Service</name>
+	<description>A middleware API service for JSE info system</description>
 	<properties>
 		<java.version>11</java.version>
 	</properties>
