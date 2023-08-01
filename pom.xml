@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.shadow</groupId>
 	<artifactId>jse-middleware-service</artifactId>
-	<version>0.0.0</version>
+	<version>0.1.0</version>
 	<name>JSE Middleware Service</name>
 	<description>A middleware API service for JSE info system</description>
 	<properties>
