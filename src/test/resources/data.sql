@@ -23,3 +23,6 @@ INSERT INTO symbol (id, company_name, del_flg) VALUES('SVL', 'SUPREME VENTURES L
 INSERT INTO notification_medium_type (id, mt_description) VALUES('TELEGRAM', 'Telegram app user chat');
 INSERT INTO `user` (id, username) VALUES('1','shadow');
 INSERT INTO `user` (id, username) VALUES('3','shadow 3');
+
+INSERT INTO notification_medium (medium_id, `user`, medium_type) VALUES ('927362871', 1, 'TELEGRAM');
+INSERT INTO notification_subscription (symbol, notif_type, medium_id) VALUES ('SVL', 'DIVDEC', '927362871');

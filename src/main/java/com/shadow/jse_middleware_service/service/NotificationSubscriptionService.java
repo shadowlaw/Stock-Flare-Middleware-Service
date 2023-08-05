@@ -8,6 +8,8 @@ import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @AllArgsConstructor
 @NoArgsConstructor
@@ -29,5 +31,16 @@ public class NotificationSubscriptionService {
         return notificationSubscriptionRepository.existsById(
                 new NotificationSubscriptionCompositeKey(symbol, notificationType, mediumId)
         );
+    }
+
+    public void deleteSubscription(NotificationSubscription subscription) {
+        notificationSubscriptionRepository.delete(subscription);
+    }
+
+    public Optional<NotificationSubscription> getSubscription(String notificationType, String symbol, String mediumId) {
+        if (!isSubscribed(notificationType, symbol, mediumId)) {
+            return Optional.empty();
+        }
+        return Optional.of(notificationSubscriptionRepository.getById(new NotificationSubscriptionCompositeKey(symbol, notificationType, mediumId)));
     }
 }
