@@ -4,16 +4,21 @@ import com.shadow.jse_middleware_service.exception.ResourceConflictException;
 import com.shadow.jse_middleware_service.exception.ResourceNotFoundException;
 import com.shadow.jse_middleware_service.repository.SymbolRepository;
 import com.shadow.jse_middleware_service.repository.UserRepository;
+import com.shadow.jse_middleware_service.repository.entity.NotificationSubscription;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Optional;
+
 @Service
 @NoArgsConstructor
 @AllArgsConstructor
+@Slf4j
 public class SubscriptionManagementService {
 
     @Autowired
@@ -50,5 +55,25 @@ public class SubscriptionManagementService {
         }
 
         notificationSubscriptionService.subscribe(newsType, symbol, medium_id);
+    }
+
+    public void deleteNewsNotification(String userId, String symbol, String notificationType, String mediumId) {
+        log.info(String.format("Deleting notification subscription [ %s - %s - %s ]", notificationType, symbol, mediumId));
+
+        Optional<NotificationSubscription> subscriptionOptional = notificationSubscriptionService.getSubscription(notificationType, symbol, mediumId);
+
+        if (subscriptionOptional.isEmpty()) {
+            log.error(String.format("Notification subscription [ %s - %s - %s ] does not exist", notificationType, symbol, mediumId));
+            throw new ResourceNotFoundException("Subscription details not found", null);
+        }
+
+        if (!notificationMediumService.isMediumOwnedByUser(userId, mediumId)) {
+            log.error(String.format("medium [%s] does not belong to user [%s]", mediumId, userId));
+            throw new ResourceNotFoundException("Subscription details not found", null);
+        }
+
+        notificationSubscriptionService.deleteSubscription(subscriptionOptional.get());
+
+        log.info(String.format("Notification subscription [ %s - %s - %s ] deleted", notificationType, symbol, mediumId));
     }
 }

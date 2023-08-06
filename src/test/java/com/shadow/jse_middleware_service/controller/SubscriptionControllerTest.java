@@ -226,4 +226,92 @@ class SubscriptionControllerTest {
             );
         }
     }
+
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @Nested
+    @DisplayName("News subscription Deletion Tests")
+    class NewsSubscriptionDeletionTest {
+        @ParameterizedTest
+        @MethodSource("getInvalidSubscriptionDeletionRequests")
+        @DisplayName("Return bad request when invalid request parameters are provided")
+        void test_deleteNewsSubscription_givenInvalidRequest_whenValidatingRequest_thenRespondWithBadRequestStatus (String symbolId, String mediumId, String notificationType, String expectedMessage) throws Exception {
+
+            mockMvc.perform(MockMvcRequestBuilders
+                            .delete(String.format("%s/users/1/symbols/%s/news/%s/%s", SUBSCRIBE_ENDPOINT, symbolId, notificationType, mediumId))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").hasJsonPath())
+                    .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
+                    .andExpect(jsonPath(expectedMessage).exists())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("Delete subscription successfully")
+        void test_deleteNewsSubscription_givenValidSubscriptionDetails_whenSubscriptionExistsAndRequestIsProcessed_thenRespondWithNoContentStatus() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                    .delete(String.format("%s/users/1/symbols/SVL/news/DIVDEC/927362871", SUBSCRIBE_ENDPOINT))
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNoContent())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("Subscription exists but medium does not belong to user")
+        void test_deleteNewsSubscription_givenValidSubscriptionDetails_whenSubscriptionExistsButMediumDoesNotBelongToUserAndRequestIsProcessed_thenRespondWithNotFoundStatus() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                            .delete(String.format("%s/users/2/symbols/SVL/news/DIVDEC/927362871", SUBSCRIBE_ENDPOINT))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.status").hasJsonPath())
+                    .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
+                    .andExpect(jsonPath("$.errors[?(@.error == \"Error\" && @.message == \"Subscription details not found\")]").exists())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("Subscription does not exists")
+        void test_deleteNewsSubscription_givenValidSubscriptionDetails_whenSubscriptionDoesNotExistsAndRequestIsProcessed_thenRespondWithNotFoundStatus() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                            .delete(String.format("%s/users/2/symbols/BIL/news/DIVDEC/927362871", SUBSCRIBE_ENDPOINT))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.status").hasJsonPath())
+                    .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
+                    .andExpect(jsonPath("$.errors[?(@.error == \"Error\" && @.message == \"Subscription details not found\")]").exists())
+                    .andDo(print());
+        }
+
+        private Stream<Arguments> getInvalidSubscriptionDeletionRequests(){
+
+            String validMediumId = "123456789";
+            String ValidSymbolId = "SVL";
+
+            String expectedSymbolMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deleteNewsSubscription.symbol: symbol id must be alphanumeric and 3-9 characters in length\")]";
+            String expectedMediumIdMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deleteNewsSubscription.mediumId: Invalid medium id format\")]";
+            String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deleteNewsSubscription.newsType: Choice Not valid. Valid choices include: "+NewsType.getNames()+"\")]";
+
+            return Stream.of(
+                    // Invalid Symbol Parameters
+                    Arguments.of("SCVSDWW.21", validMediumId, NewsType.DIVDEC.toString(), expectedSymbolMessage),
+                    Arguments.of("SCVSDWW@2", validMediumId, NewsType.DIVDEC.toString(), expectedSymbolMessage),
+                    Arguments.of(validMediumId, validMediumId, NewsType.DIVDEC.toString(), expectedSymbolMessage),
+                    Arguments.of("DH", validMediumId, NewsType.DIVDEC.toString(), expectedSymbolMessage),
+                    Arguments.of(null, validMediumId, NewsType.DIVDEC.toString(), expectedSymbolMessage),
+
+                    // Invalid Medium ID Parameters
+                    Arguments.of(ValidSymbolId, "12345678", NewsType.DIVDEC.toString(), expectedMediumIdMessage),
+                    Arguments.of(ValidSymbolId, "abcdefg", NewsType.DIVDEC.toString(), expectedMediumIdMessage),
+                    Arguments.of(ValidSymbolId, null, NewsType.DIVDEC.toString(), expectedMediumIdMessage),
+
+                    // Invalid News Type
+                    Arguments.of(ValidSymbolId, validMediumId, "ONE", expectedNewsTypeMessage),
+                    Arguments.of(ValidSymbolId, validMediumId, null, expectedNewsTypeMessage)
+            );
+        }
+    }
 }
