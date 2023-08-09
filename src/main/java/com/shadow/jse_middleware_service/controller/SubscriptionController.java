@@ -3,6 +3,7 @@ package com.shadow.jse_middleware_service.controller;
 import com.shadow.jse_middleware_service.annotations.ValidEnumConstant;
 import com.shadow.jse_middleware_service.constants.NewsType;
 import com.shadow.jse_middleware_service.controller.request.NewsSubscriptionRequest;
+import com.shadow.jse_middleware_service.controller.request.PriceNotificationRequest;
 import com.shadow.jse_middleware_service.controller.response.ErrorResponse;
 import com.shadow.jse_middleware_service.controller.response.Response;
 import com.shadow.jse_middleware_service.service.SubscriptionManagementService;
@@ -28,7 +29,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 
-import static com.shadow.jse_middleware_service.constants.LoggingConstants.REQUEST_ID;
+import static com.shadow.jse_middleware_service.constants.LoggingConstants.*;
 
 @Tag(name = "Notification subscription endpoints",  description = "Mange user subscriptions to notifications")
 @Validated
@@ -91,6 +92,34 @@ public class SubscriptionController {
         Response response = new Response(HttpStatus.NO_CONTENT.value());
 
         return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
+    }
+
+    @Operation(summary = "Create price notification update subscription")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "201", description = "Price Notification Updated created", content = @Content(schema=@Schema(implementation = Response.class), mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "400", description = "The user submitted Bad Request.", content = @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "500", description = "Internal Error", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
+    })
+    @PostMapping("users/{user_id}/symbols/{symbol}/price")
+    public ResponseEntity<?> createPriceNotificationSubscription(
+            @PathVariable("user_id") String userId,
+            @PathVariable("symbol")
+            @Pattern(regexp = "^(?=.*[A-Z])[\\w.]{3,9}$",
+                    message = "symbol id must be alphanumeric and 3-9 characters in length"
+            ) String symbolId,
+            @RequestBody @Valid PriceNotificationRequest priceNotificationRequest
+    ) {
+        MDC.put(REQUEST_ID, "CREATE_PRICE_NOTIFICATION");
+        MDC.put(USER_ID, userId);
+        MDC.put(SYMBOL, symbolId);
+        MDC.put(MEDIUM_ID, priceNotificationRequest.getMediumId());
+
+        subscriptionManagementService.createPriceNotification(userId, symbolId, priceNotificationRequest.getNotificationType(), priceNotificationRequest.getMediumId());
+
+        Response response = new Response(HttpStatus.CREATED.value());
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+
     }
 
 }

@@ -76,4 +76,28 @@ public class SubscriptionManagementService {
 
         log.info(String.format("Notification subscription [ %s - %s - %s ] deleted", notificationType, symbol, mediumId));
     }
+
+    public void createPriceNotification(String userId, String symbolId, String notificationType, String mediumId) {
+        log.info("creating price notification");
+
+        if (!userRepository.existsById(Integer.parseInt(userId))) {
+            throw new ResourceNotFoundException(String.format("Unable to find user with id %s", userId), null);
+        }
+
+        if (!symbolRepository.existsById(symbolId)) {
+            throw new ResourceNotFoundException(String.format("Unable to find symbol with id %s", symbolId), null);
+        }
+
+        if (!notificationMediumService.isMediumOwnedByUser(userId, mediumId)) {
+            throw new ResourceNotFoundException("Notification medium not available for use", null);
+        }
+
+        if (notificationSubscriptionService.isSubscribed(notificationType, symbolId, mediumId)) {
+            throw new ResourceConflictException("User is already subscribed for notifications", null);
+        }
+
+        notificationSubscriptionService.subscribe(notificationType, symbolId, mediumId);
+
+        log.info("price notification created");
+    }
 }
