@@ -4,7 +4,9 @@ package com.shadow.jse_middleware_service.controller;
 import com.google.gson.Gson;
 import com.shadow.jse_middleware_service.constants.NewsType;
 import com.shadow.jse_middleware_service.constants.NotificationMediumType;
+import com.shadow.jse_middleware_service.constants.PriceTargetType;
 import com.shadow.jse_middleware_service.controller.request.NewsSubscriptionRequest;
+import com.shadow.jse_middleware_service.controller.request.PriceNotificationRequest;
 import org.apache.commons.lang3.EnumUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -311,6 +313,130 @@ class SubscriptionControllerTest {
                     // Invalid News Type
                     Arguments.of(ValidSymbolId, validMediumId, "ONE", expectedNewsTypeMessage),
                     Arguments.of(ValidSymbolId, validMediumId, null, expectedNewsTypeMessage)
+            );
+        }
+    }
+
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @Nested
+    @DisplayName("Price update notification creation test")
+    class PriceUpdateCreationTest{
+
+        @ParameterizedTest
+        @MethodSource("getInvalidCreatePriceNotificationSubscriptionRequest")
+        @DisplayName("Return bad status when user input invalid")
+        void test_createPriceNotificationSubscription_givenInvalidRequest_whenValidatingRequest_thenRespondWithBadRequestStatus(String userId, String symbolId, PriceNotificationRequest requestBody, String expectedError) throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                        .post(String.format("%s/users/%s/symbols/%s/price", SUBSCRIBE_ENDPOINT, userId, symbolId))
+                        .content(gson.toJson(requestBody))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").hasJsonPath())
+                    .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
+                    .andExpect(jsonPath(expectedError).exists())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("User does not exist")
+        void test_createPriceNotificationSubscription_givenValidRequest_whenUserDoesNotExists_thenReturnNotFound() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                        .post(String.format("%s/users/2/symbols/SVL/price", SUBSCRIBE_ENDPOINT))
+                        .content(gson.toJson(new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "927362871")))
+                        .accept(MediaType.APPLICATION_JSON)
+                        .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.status").exists())
+                    .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
+                    .andExpect(jsonPath("$.errors[?(@.error == \"Error\" && @.message == \"Unable to find user with id 2\")]").exists())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("Medium id does not belong to user")
+        void test_createPriceNotificationSubscription_givenValidRequest_whenMediumIdDoesNotBelongToUser_thenReturnNotFound() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                            .post(String.format("%s/users/3/symbols/SVL/price", SUBSCRIBE_ENDPOINT))
+                            .content(gson.toJson(new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "927362871")))
+                            .accept(MediaType.APPLICATION_JSON)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.status").exists())
+                    .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
+                    .andExpect(jsonPath("$.errors[?(@.error == \"Error\" && @.message == \"Notification medium not available for use\")]").exists())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("Subscription exists but medium id does not belong to user")
+        void test_createPriceNotificationSubscription_givenValidRequest_whenSymbolIdDoesNotExist_thenReturnNotFound() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                            .post(String.format("%s/users/1/symbols/BILL/price", SUBSCRIBE_ENDPOINT))
+                            .content(gson.toJson(new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "927362871")))
+                            .accept(MediaType.APPLICATION_JSON)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isNotFound())
+                    .andExpect(jsonPath("$.status").exists())
+                    .andExpect(jsonPath("$.status").value(HttpStatus.NOT_FOUND.value()))
+                    .andExpect(jsonPath("$.errors[?(@.error == \"Error\" && @.message == \"Unable to find symbol with id BILL\")]").exists())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("Subscription already exists")
+        void test_createPriceNotificationSubscription_givenValidRequest_whenSubscriptionExists_thenReturnConflict() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                            .post(String.format("%s/users/1/symbols/SVL/price", SUBSCRIBE_ENDPOINT))
+                            .content(gson.toJson(new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "927362871")))
+                            .accept(MediaType.APPLICATION_JSON)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isConflict())
+                    .andExpect(jsonPath("$.status").exists())
+                    .andExpect(jsonPath("$.status").value(HttpStatus.CONFLICT.value()))
+                    .andExpect(jsonPath("$.errors[?(@.error == \"Error\" && @.message == \"User is already subscribed for notifications\")]").exists())
+                    .andDo(print());
+        }
+
+        @Test
+        @DisplayName("Successfully create subscription")
+        void test_createPriceNotificationSubscription_givenValidRequest_whenRequestHadBeenProcessed_thenReturnCreated() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                            .post(String.format("%s/users/1/symbols/TJH/price", SUBSCRIBE_ENDPOINT))
+                            .content(gson.toJson(new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "927362871")))
+                            .accept(MediaType.APPLICATION_JSON)
+                            .contentType(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.status").exists())
+                    .andExpect(jsonPath("$.status").value(HttpStatus.CREATED.value()))
+                    .andDo(print());
+        }
+
+        private Stream<Arguments> getInvalidCreatePriceNotificationSubscriptionRequest () {
+            String validUserId="1";
+            String validSymbol="SVL";
+            String validMediumId="123456789";
+            String expectedSymbolMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"createPriceNotificationSubscription.symbolId: symbol id must be alphanumeric and 3-9 characters in length\")]";
+            String expectedMediumIdMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"Field: mediumId - Invalid medium id format\")]";
+            String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"Field: notificationType - Choice Not valid. Valid choices include: "+PriceTargetType.getNames()+"\")]";
+
+            PriceNotificationRequest priceNotificationRequest = new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), validMediumId);
+
+            return Stream.of(
+                    // Invalid Symbol Parameters
+                    Arguments.of(validUserId, "SCVSDWW.21", priceNotificationRequest, expectedSymbolMessage),
+                    Arguments.of(validUserId, "SCVSDWW@2", priceNotificationRequest, expectedSymbolMessage),
+                    Arguments.of(validUserId, "DH", priceNotificationRequest, expectedSymbolMessage),
+                    Arguments.of(validUserId, null, priceNotificationRequest, expectedSymbolMessage),
+
+                    // Invalid medium id Parameters
+                    Arguments.of(validUserId, validSymbol, new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "12345678"), expectedMediumIdMessage),
+                    Arguments.of(validUserId, validSymbol, new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "abcdefg"), expectedMediumIdMessage),
+                    Arguments.of(validUserId, validSymbol, new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), null), "$.errors[?(@.error == \"Validation Error\" && @.message == \"Field: mediumId - must not be blank\")]"),
+
+                    // Invalid price target Parameters
+                    Arguments.of(validUserId, validSymbol, new PriceNotificationRequest("OVE", validMediumId), expectedNewsTypeMessage),
+                    Arguments.of(validUserId, validSymbol, new PriceNotificationRequest(null, validMediumId), expectedNewsTypeMessage)
             );
         }
     }
