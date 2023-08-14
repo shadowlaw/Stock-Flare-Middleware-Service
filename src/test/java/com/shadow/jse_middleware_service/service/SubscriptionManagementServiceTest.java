@@ -210,4 +210,58 @@ class SubscriptionManagementServiceTest {
 
         assertEquals(subscription, subscriptionArgumentCaptor.getValue());
     }
+
+    @Test
+    void testCreatePriceNotification_givenInputParameters_whenUserIdIsNotFoundInDB_thenThrowResourceNotFoundException(){
+        String userId = "1";
+
+        when(userRepository.existsById(any())).thenReturn(false);
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            subscriptionManagementService.createPriceNotification(userId, "", "", "");
+        });
+
+        assertEquals(String.format("Unable to find user with id %s", userId), exception.getMessage());
+    }
+
+    @Test
+    void testCreatePriceNotification_givenInputParameters_whenSymbolIdIsNotFoundInDB_thenThrowResourceNotFoundException(){
+        String symbolId = "1";
+
+        when(userRepository.existsById(any())).thenReturn(true);
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            subscriptionManagementService.createPriceNotification("1", symbolId, "", "");
+        });
+
+        assertEquals(String.format("Unable to find symbol with id %s", symbolId), exception.getMessage());
+    }
+
+    @Test
+    void testCreatePriceNotification_givenInputParameters_whenMediumIdIsNotFoundInDB_thenThrowResourceNotFoundException(){
+        when(userRepository.existsById(any())).thenReturn(true);
+        when(symbolRepository.existsById(any())).thenReturn(true);
+        when(notificationMediumService.isMediumOwnedByUser(any(), any())).thenReturn(false);
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            subscriptionManagementService.createPriceNotification("1", "", "", "");
+        });
+
+        assertEquals("Notification medium not available for use", exception.getMessage());
+    }
+
+    @Test
+    void testCreatePriceNotification_givenInputParameters_whenSubscriptionExists_thenThrowResourceConflictException(){
+        when(userRepository.existsById(any())).thenReturn(true);
+        when(symbolRepository.existsById(any())).thenReturn(true);
+        when(notificationMediumService.isMediumOwnedByUser(any(), any())).thenReturn(true);
+        when(notificationSubscriptionService.isSubscribed(any(), any(), any())).thenReturn(true);
+
+
+        ResourceConflictException exception = assertThrows(ResourceConflictException.class, () -> {
+            subscriptionManagementService.createPriceNotification("1", "", "", "");
+        });
+
+        assertEquals("User is already subscribed for notifications", exception.getMessage());
+    }
 }
