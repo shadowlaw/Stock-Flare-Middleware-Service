@@ -100,4 +100,24 @@ public class SubscriptionManagementService {
 
         log.info("price notification created");
     }
+
+    public void deletePriceNotification(String userId, String symbolId, String notificationType, String mediumId) {
+        log.info(String.format("Deleting notification subscription [ %s - %s - %s ]", notificationType, symbolId, mediumId));
+
+        if (!notificationMediumService.isMediumOwnedByUser(userId, mediumId)) {
+            log.error(String.format("medium [%s] does not belong to user [%s]", mediumId, userId));
+            throw new ResourceNotFoundException("Subscription details not found", null);
+        }
+
+        Optional<NotificationSubscription> subscriptionOptional = notificationSubscriptionService.getSubscription(notificationType, symbolId, mediumId);
+
+        if (subscriptionOptional.isEmpty()) {
+            log.error(String.format("Notification subscription [ %s - %s - %s ] does not exist", notificationType, symbolId, mediumId));
+            throw new ResourceNotFoundException("Subscription details not found", null);
+        }
+
+        notificationSubscriptionService.deleteSubscription(subscriptionOptional.get());
+
+        log.info(String.format("Notification subscription [ %s - %s - %s ] deleted", notificationType, symbolId, mediumId));
+    }
 }
