@@ -287,4 +287,51 @@ class SubscriptionManagementServiceTest {
         assertEquals(symbol, symbolCaptor.getValue());
         assertEquals(medium_id, mediumIdCaptor.getValue());
     }
+
+    @Test
+    void testDeletePriceNotificationSubscription_givenSubscriptionData_whenMediumIdDoesNotBelongToUser_thenThrowResourceNotFoundException () {
+
+        String expectedExceptionMessage = "Subscription details not found";
+
+        when(notificationMediumService.isMediumOwnedByUser(any(), any())).thenReturn(false);
+
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            subscriptionManagementService.deletePriceNotification("1","SVL","DIVDEC", "123456789");
+        });
+
+        assertEquals(exception.getMessage(), expectedExceptionMessage);
+    }
+
+    @Test
+    void testDeletePriceNotificationSubscription_givenSubscriptionData_whenSubscriptionExistsAndBelongsToUser_thenDeleteSubscription() {
+
+        String symbol = "SVL";
+        String notif_type = "DIVDEV";
+        String medium_id = "123456789";
+
+        NotificationSubscription subscription = new NotificationSubscription(new NotificationSubscriptionCompositeKey(symbol, notif_type, medium_id));
+        ArgumentCaptor<NotificationSubscription> subscriptionArgumentCaptor = ArgumentCaptor.forClass(NotificationSubscription.class);
+
+        when(notificationSubscriptionService.getSubscription(any(), any(), any())).thenReturn(Optional.of(subscription));
+        when(notificationMediumService.isMediumOwnedByUser(any(), any())).thenReturn(true);
+
+        subscriptionManagementService.deletePriceNotification("", symbol, notif_type, medium_id);
+        verify(notificationSubscriptionService).deleteSubscription(subscriptionArgumentCaptor.capture());
+
+        assertEquals(subscription, subscriptionArgumentCaptor.getValue());
+    }
+
+    @Test
+    void testDeletePriceNotificationSubscription_givenSubscriptionData_whenSubscriptionDoesNotExist_thenThrowResourceNotFoundException () {
+
+        String expectedExceptionMessage = "Subscription details not found";
+
+        when(notificationMediumService.isMediumOwnedByUser(any(), any())).thenReturn(true);
+        when(notificationSubscriptionService.getSubscription(any(), any(), any())).thenReturn(Optional.empty());
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
+            subscriptionManagementService.deletePriceNotification("1","SVL","DIVDEC", "123456789");
+        });
+
+        assertEquals(exception.getMessage(), expectedExceptionMessage);
+    }
 }

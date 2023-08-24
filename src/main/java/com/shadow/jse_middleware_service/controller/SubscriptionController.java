@@ -148,9 +148,9 @@ public class SubscriptionController {
 
         subscriptionManagementService.deletePriceNotification(userId, symbolId, notificationType, mediumId);
 
-        Response response = new Response(HttpStatus.NOT_FOUND.value());
+        Response response = new Response(HttpStatus.NO_CONTENT.value());
 
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(response);
     }
 
 }
