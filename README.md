@@ -1,3 +1,3 @@
-# JSE Middleware Service v0.1.0
+# JSE Middleware Service v0.2.0
 
 Middleware API service for JSE info system.
