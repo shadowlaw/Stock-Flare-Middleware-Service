@@ -2,6 +2,7 @@ package com.shadow.jse_middleware_service.controller;
 
 import com.shadow.jse_middleware_service.controller.response.ErrorResponse;
 import com.shadow.jse_middleware_service.controller.response.Response;
+import com.shadow.jse_middleware_service.controller.response.SymbolDataResponse;
 import com.shadow.jse_middleware_service.repository.entity.Symbol;
 import com.shadow.jse_middleware_service.service.SymbolService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -70,10 +71,10 @@ public class SymbolController {
 
         if (symbolPage.isEmpty()) {
             log.debug(String.format("page content size: %s", symbolPage.getNumberOfElements()));
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(symbolPage);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new SymbolDataResponse(HttpStatus.NOT_FOUND.value(), symbolPage));
         }
 
         log.info("Request processed");
-        return ResponseEntity.ok(symbolPage);
+        return ResponseEntity.ok(new SymbolDataResponse(HttpStatus.OK.value(), symbolPage));
     }
 }
