@@ -31,8 +31,6 @@ class SymbolControllerTest {
     @Autowired
     private MockMvc mockMvc;
 
-    private Gson gson = new Gson();
-
     @Value("${app.api.symbol.page.default_size}")
     private Integer pageDefaultSize;
 

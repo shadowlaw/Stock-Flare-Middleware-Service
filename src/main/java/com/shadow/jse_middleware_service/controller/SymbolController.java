@@ -1,7 +1,6 @@
 package com.shadow.jse_middleware_service.controller;
 
 import com.shadow.jse_middleware_service.controller.response.ErrorResponse;
-import com.shadow.jse_middleware_service.controller.response.Response;
 import com.shadow.jse_middleware_service.controller.response.SymbolDataResponse;
 import com.shadow.jse_middleware_service.repository.entity.Symbol;
 import com.shadow.jse_middleware_service.service.SymbolService;
@@ -47,7 +46,8 @@ public class SymbolController {
 
     @Operation(summary = "Retrieve symbol data",description = "Retrieves symbol data", tags = "Symbol data endpoints")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Symbol data found", content = @Content(schema = @Schema(implementation = Page.class), mediaType =  MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "200", description = "Symbol data found", content = @Content(schema = @Schema(implementation = SymbolDataResponse.class), mediaType =  MediaType.APPLICATION_JSON_VALUE)),
+            @ApiResponse(responseCode = "404", description = "No symbol data found for the requested page.", content = @Content(schema = @Schema(implementation = SymbolDataResponse.class), mediaType = MediaType.APPLICATION_JSON_VALUE)),
             @ApiResponse(responseCode = "400", description = "The user submitted Bad Request.", content = @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = MediaType.APPLICATION_JSON_VALUE)),
             @ApiResponse(responseCode = "500", description = "Internal Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = MediaType.APPLICATION_JSON_VALUE))
     })
@@ -68,13 +68,11 @@ public class SymbolController {
         MDC.put(PAGE_SIZE, pageSize.toString());
 
         Page<Symbol> symbolPage = symbolService.getSymbols(pageNumber, pageSize);
+        HttpStatus responseStatus = symbolPage.isEmpty() ? HttpStatus.NOT_FOUND : HttpStatus.OK;
 
-        if (symbolPage.isEmpty()) {
-            log.debug(String.format("page content size: %s", symbolPage.getNumberOfElements()));
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new SymbolDataResponse(HttpStatus.NOT_FOUND.value(), symbolPage));
-        }
-
+        log.debug(String.format("page content size: %s", symbolPage.getNumberOfElements()));
         log.info("Request processed");
-        return ResponseEntity.ok(new SymbolDataResponse(HttpStatus.OK.value(), symbolPage));
+
+        return ResponseEntity.status(responseStatus).body(new SymbolDataResponse(responseStatus.value(), symbolPage));
     }
 }
