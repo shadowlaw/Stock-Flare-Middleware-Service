@@ -31,6 +31,8 @@ import javax.validation.Valid;
 import javax.validation.constraints.Pattern;
 
 import static com.shadow.jse_middleware_service.constants.LoggingConstants.*;
+import static com.shadow.jse_middleware_service.constants.Validation.MEDIUM_ID_REGEX;
+import static com.shadow.jse_middleware_service.constants.Validation.SYMBOL_ID_REGEX;
 
 @Tag(name = "Notification subscription endpoints",  description = "Mange user subscriptions to notifications")
 @Validated
@@ -51,7 +53,7 @@ public class SubscriptionController {
     public ResponseEntity<?> newsSubscribe (
             @PathVariable("user_id") String user_id,
             @PathVariable("symbol")
-            @Pattern(regexp = "^(?=.*[A-Z])[\\w.]{3,9}$",
+            @Pattern(regexp = SYMBOL_ID_REGEX,
                     message = "symbol id must be alphanumeric and 3-9 characters in length"
             ) String symbol,
             @RequestBody @Valid NewsSubscriptionRequest subscriptionRequest) {
@@ -76,13 +78,13 @@ public class SubscriptionController {
     public ResponseEntity<?> deleteNewsSubscription (
             @PathVariable("user_id") String userId,
             @PathVariable("symbol_id")
-            @Pattern(regexp = "^(?=.*[A-Z])[\\w.]{3,9}$", message = "symbol id must be alphanumeric and 3-9 characters in length")
+            @Pattern(regexp = SYMBOL_ID_REGEX, message = "symbol id must be alphanumeric and 3-9 characters in length")
             String symbol,
             @PathVariable("notification_type")
             @ValidEnumConstant(enumClazz = NewsType.class)
             String newsType,
             @PathVariable("medium_id")
-            @Pattern(regexp = "^[0-9]{9}$", message = "Invalid medium id format")
+            @Pattern(regexp = MEDIUM_ID_REGEX, message = "Invalid medium id format")
             String mediumId
             ) {
 
@@ -105,7 +107,7 @@ public class SubscriptionController {
     public ResponseEntity<?> createPriceNotificationSubscription(
             @PathVariable("user_id") String userId,
             @PathVariable("symbol")
-            @Pattern(regexp = "^(?=.*[A-Z])[\\w.]{3,9}$",
+            @Pattern(regexp = SYMBOL_ID_REGEX,
                     message = "symbol id must be alphanumeric and 3-9 characters in length"
             ) String symbolId,
             @RequestBody @Valid PriceNotificationRequest priceNotificationRequest
@@ -132,13 +134,13 @@ public class SubscriptionController {
     @DeleteMapping("users/{user_id}/symbols/{symbol}/price/{notification_type}/{medium_id}")
     public ResponseEntity<?> deletePriceNotificationSubscription(
             @PathVariable("user_id") String userId,
-            @Pattern(regexp = "^(?=.*[A-Z])[\\w.]{3,9}$",
+            @Pattern(regexp = SYMBOL_ID_REGEX,
                     message = "symbol id must be alphanumeric and 3-9 characters in length"
             )
             @PathVariable("symbol") String symbolId,
             @ValidEnumConstant(enumClazz = PriceTargetType.class)
             @PathVariable("notification_type") String notificationType,
-            @Pattern(regexp = "^[0-9]{9}$", message = "Invalid medium id format")
+            @Pattern(regexp = MEDIUM_ID_REGEX, message = "Invalid medium id format")
             @PathVariable("medium_id") String mediumId
     ){
         MDC.put(REQUEST_ID, "CREATE_PRICE_NOTIFICATION");

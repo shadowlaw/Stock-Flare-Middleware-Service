@@ -10,6 +10,8 @@ import lombok.NoArgsConstructor;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 
+import static com.shadow.jse_middleware_service.constants.Validation.MEDIUM_ID_REGEX;
+
 @Schema(name = "Price Notification Request")
 @Data
 @AllArgsConstructor
@@ -22,6 +24,6 @@ public class PriceNotificationRequest {
 
     @Schema(description = "Medium Id to send  notification to", required = true)
     @NotBlank
-    @Pattern(regexp = "^[0-9]{9}$", message = "Invalid medium id format")
+    @Pattern(regexp = MEDIUM_ID_REGEX, message = "Invalid medium id format")
     private String mediumId;
 }
