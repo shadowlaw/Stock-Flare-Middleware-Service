@@ -7,7 +7,7 @@ import com.shadow.jse_middleware_service.constants.NotificationMediumType;
 import com.shadow.jse_middleware_service.constants.PriceTargetType;
 import com.shadow.jse_middleware_service.controller.request.NewsSubscriptionRequest;
 import com.shadow.jse_middleware_service.controller.request.PriceNotificationRequest;
-import org.apache.commons.lang3.EnumUtils;
+import com.shadow.jse_middleware_service.util.CustomEnumUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -168,7 +168,7 @@ class SubscriptionControllerTest {
                     .andExpect(jsonPath("$.status").hasJsonPath())
                     .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
                     .andExpect(jsonPath(String.format("$.errors[?(@.error == \"Validation Error\" && @.message == \"Field: newsType - Choice Not valid. Valid choices include: %s\")]",
-                            EnumUtils.getEnumList(NewsType.class).toString().replace("[", "").replace("]", ""))).exists())
+                            CustomEnumUtils.getNames(NewsType.class))).exists())
                     .andDo(print());
         }
 
@@ -187,7 +187,7 @@ class SubscriptionControllerTest {
                     .andExpect(jsonPath("$.status").hasJsonPath())
                     .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
                     .andExpect(jsonPath(String.format("$.errors[?(@.error == \"Validation Error\" && @.message == \"Field: mediumType - Choice Not valid. Valid choices include: %s\")]",
-                            EnumUtils.getEnumList(NotificationMediumType.class).toString().replace("[", "").replace("]", ""))).exists())
+                            CustomEnumUtils.getNames(NotificationMediumType.class))).exists())
                     .andDo(print());
         }
 
@@ -295,7 +295,7 @@ class SubscriptionControllerTest {
 
             String expectedSymbolMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deleteNewsSubscription.symbol: symbol id must be alphanumeric and 3-9 characters in length\")]";
             String expectedMediumIdMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deleteNewsSubscription.mediumId: Invalid medium id format\")]";
-            String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deleteNewsSubscription.newsType: Choice Not valid. Valid choices include: "+NewsType.getNames()+"\")]";
+            String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deleteNewsSubscription.newsType: Choice Not valid. Valid choices include: "+ CustomEnumUtils.getNames(NewsType.class)+"\")]";
 
             return Stream.of(
                     // Invalid Symbol Parameters
@@ -418,7 +418,7 @@ class SubscriptionControllerTest {
             String validMediumId="123456789";
             String expectedSymbolMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"createPriceNotificationSubscription.symbolId: symbol id must be alphanumeric and 3-9 characters in length\")]";
             String expectedMediumIdMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"Field: mediumId - Invalid medium id format\")]";
-            String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"Field: notificationType - Choice Not valid. Valid choices include: "+PriceTargetType.getNames()+"\")]";
+            String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"Field: notificationType - Choice Not valid. Valid choices include: "+CustomEnumUtils.getNames(PriceTargetType.class)+"\")]";
 
             PriceNotificationRequest priceNotificationRequest = new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), validMediumId);
 
@@ -507,7 +507,7 @@ class SubscriptionControllerTest {
 
             String expectedSymbolMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deletePriceNotificationSubscription.symbolId: symbol id must be alphanumeric and 3-9 characters in length\")]";
             String expectedMediumIdMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deletePriceNotificationSubscription.mediumId: Invalid medium id format\")]";
-            String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deletePriceNotificationSubscription.notificationType: Choice Not valid. Valid choices include: "+PriceTargetType.getNames()+"\")]";
+            String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deletePriceNotificationSubscription.notificationType: Choice Not valid. Valid choices include: "+CustomEnumUtils.getNames(PriceTargetType.class)+"\")]";
 
             return Stream.of(
                     // Invalid Symbol Parameters

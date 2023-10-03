@@ -1,4 +1,4 @@
-package com.shadow.jse_middleware_service;
+package com.shadow.jse_middleware_service.util;
 
 import org.apache.tomcat.util.codec.binary.Base64;
 import org.springframework.http.MediaType;
