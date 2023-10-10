@@ -13,6 +13,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -527,5 +528,68 @@ class SubscriptionControllerTest {
                     Arguments.of(ValidSymbolId, validMediumId, null, expectedNewsTypeMessage)
             );
         }
+    }
+
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @Nested
+    @DisplayName("Notification Subscription Data Retrieval Tests")
+    class NotificationSubscriptionDataRetrieval {
+
+        @Value("${app.api.subscription.page.default_size}")
+        private Integer pageDefaultSize;
+
+        @Value("${app.api.subscription.page.max_page_size}")
+        private Integer maxPageSize;
+
+        @Test
+        @DisplayName("Successful call without parameters")
+        void test_getNotificationSubscriptions_GivenRequestWithNoQueryParams_whenSubscriptionDataIsAvailable_thenReturnDefaultPageData () throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                            .get(String.format("%s/%s", SUBSCRIBE_ENDPOINT, "927362871"))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").hasJsonPath())
+                    .andExpect(jsonPath("$.status").value(HttpStatus.OK.value()))
+                    .andExpect(jsonPath("$.page.content").hasJsonPath())
+                    .andExpect(jsonPath("$.page.numberOfElements").hasJsonPath())
+                    .andExpect(jsonPath(String.format("$.page[?(@.numberOfElements <= %s)]", pageDefaultSize)).exists())
+                    .andExpect(jsonPath("$.page.pageable.pageNumber").hasJsonPath())
+                    .andExpect(jsonPath("$.page.pageable.pageNumber").value(0))
+                    .andDo(print());
+        }
+
+        @ParameterizedTest
+        @MethodSource("getSubscriptionTestParameters")
+        @DisplayName("Test response for query params")
+        void test_getNotificationSubscriptions_givenQueryParameters_whenProcessingRequest_thenReturnGracefulResponse(Integer pageNumber, Integer pageSize, Integer status, Integer expectedPageNumber, Integer expectedPageSize) throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                            .get(String.format("%s/%s", SUBSCRIBE_ENDPOINT, "927362871"))
+                            .param("page", pageNumber.toString())
+                            .param("size", pageSize.toString())
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is(status))
+                    .andExpect(jsonPath("$.status").hasJsonPath())
+                    .andExpect(jsonPath("$.status").value(status))
+                    .andExpect(jsonPath("$.page.content").hasJsonPath())
+                    .andExpect(jsonPath(String.format("$.page[?(@.content.length() == %s)]", expectedPageSize)).exists())
+                    .andExpect(jsonPath("$.page.numberOfElements").hasJsonPath())
+                    .andExpect(jsonPath(String.format("$.page[?(@.numberOfElements <= %s)]", expectedPageSize)).exists())
+                    .andExpect(jsonPath("$.page.pageable.pageNumber").hasJsonPath())
+                    .andExpect(jsonPath("$.page.pageable.pageNumber").value(expectedPageNumber))
+                    .andDo(print());
+        }
+
+        private Stream<Arguments> getSubscriptionTestParameters() {
+            return Stream.of(
+                    // Given: page number, page size | Expected: return status, page number, page size
+                    Arguments.of(-1, 0, HttpStatus.OK.value(), 0, pageDefaultSize),
+                    Arguments.of(0, maxPageSize+1, HttpStatus.OK.value(), 0, maxPageSize),
+                    Arguments.of(2, maxPageSize, HttpStatus.NOT_FOUND.value(), 2, 0),
+                    Arguments.of(0, 1, HttpStatus.OK.value(), 0, 1)
+            );
+        }
+
     }
 }

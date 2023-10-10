@@ -40,3 +40,6 @@ INSERT INTO notification_medium (medium_id, `user`, medium_type) VALUES ('927362
 INSERT INTO notification_subscription (symbol, notif_type, medium_id) VALUES ('SVL', 'DIVDEC', '927362871');
 INSERT INTO notification_subscription (symbol, notif_type, medium_id) VALUES ('SVL', 'PRC_VAL_UP_ALL', '927362871');
 INSERT INTO notification_subscription (symbol, notif_type, medium_id) VALUES ('TJH', 'PRC_VAL_UP_ALL', '927362871');
+INSERT INTO notification_subscription (symbol, notif_type, medium_id) VALUES ('CPFV', 'DIVDEC', '927362871');
+INSERT INTO notification_subscription (symbol, notif_type, medium_id) VALUES ('CPJ', 'PRC_VAL_UP_ALL', '927362871');
+INSERT INTO notification_subscription (symbol, notif_type, medium_id) VALUES ('BRG', 'DIVDEC', '927362871');
