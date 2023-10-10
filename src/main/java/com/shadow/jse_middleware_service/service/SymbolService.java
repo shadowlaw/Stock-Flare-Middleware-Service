@@ -20,7 +20,7 @@ public class SymbolService {
     @Autowired
     SymbolRepository symbolRepository;
 
-    public Page<Symbol> getSymbols(Integer page, Integer pageSize) {
-        return symbolRepository.findAll(PageRequest.of(page, pageSize));
+    public Page<Symbol> getSymbols(PageRequest pageRequest) {
+        return symbolRepository.findAll(pageRequest);
     }
 }
