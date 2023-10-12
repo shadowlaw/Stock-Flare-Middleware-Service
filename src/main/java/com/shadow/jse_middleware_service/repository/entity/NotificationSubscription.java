@@ -1,5 +1,6 @@
 package com.shadow.jse_middleware_service.repository.entity;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
 import com.shadow.jse_middleware_service.repository.entity.key.NotificationSubscriptionCompositeKey;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -15,5 +16,6 @@ import javax.persistence.Entity;
 public class NotificationSubscription {
 
     @EmbeddedId
+    @JsonUnwrapped
     NotificationSubscriptionCompositeKey notificationSubscriptionCompositeKey;
 }
