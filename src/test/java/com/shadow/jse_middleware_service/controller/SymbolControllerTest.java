@@ -20,6 +20,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.util.stream.Stream;
 
 import static com.shadow.jse_middleware_service.constants.TestConstants.SYMBOL_ENDPOINT;
+import static com.shadow.jse_middleware_service.util.HttpUtils.getBasicAuthenticationHeader;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -37,6 +38,12 @@ class SymbolControllerTest {
     @Value("${app.api.symbol.page.max_page_size}")
     private Integer maxPageSize;
 
+    @Value("${spring.security.user.name}")
+    private String username;
+
+    @Value("${spring.security.user.password}")
+    private String password;
+
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @Nested
     @DisplayName("Symbol Data Retrieval Tests")
@@ -47,6 +54,7 @@ class SymbolControllerTest {
         void test_getSymbols_GivenRequestWithNoQueryParams_whenSymbolDataIsAvailable_thenReturnDefaultPageData () throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                         .get(SYMBOL_ENDPOINT)
+                        .header("Authorization", getBasicAuthenticationHeader(username, password))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -66,6 +74,7 @@ class SymbolControllerTest {
         void test_getSymbolData_givenQueryParameters_whenProcessingRequest_thenReturnGracefulResponse(Integer pageNumber, Integer pageSize, Integer status, Integer expectedPageNumber, Integer expectedPageSize) throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .get(SYMBOL_ENDPOINT)
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .param("page", pageNumber.toString())
                             .param("size", pageSize.toString())
                             .contentType(MediaType.APPLICATION_JSON)
