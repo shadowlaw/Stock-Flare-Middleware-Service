@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.util.stream.Stream;
 
 import static com.shadow.jse_middleware_service.constants.TestConstants.SUBSCRIBE_ENDPOINT;
+import static com.shadow.jse_middleware_service.util.HttpUtils.getBasicAuthenticationHeader;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -38,6 +39,12 @@ class SubscriptionControllerTest {
     private MockMvc mockMvc;
 
     Gson gson = new Gson();
+
+    @Value("${spring.security.user.name}")
+    private String username;
+
+    @Value("${spring.security.user.password}")
+    private String password;
 
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @Nested
@@ -53,6 +60,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                     .post(SUBSCRIBE_ENDPOINT + "/users/1/symbols/SVL/news")
+                     .header("Authorization", getBasicAuthenticationHeader(username, password))
                     .content(gson.toJson(requestBody))
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON))
@@ -71,6 +79,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .post(SUBSCRIBE_ENDPOINT + "/users/1/symbols/SVL/news")
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(requestBody))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
@@ -89,6 +98,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .post(SUBSCRIBE_ENDPOINT + "/users/1/symbols/SVVL/news")
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(requestBody))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
@@ -107,6 +117,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .post(SUBSCRIBE_ENDPOINT + "/users/2/symbols/SVL/news")
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(requestBody))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
@@ -126,6 +137,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .post(SUBSCRIBE_ENDPOINT + "/users/3/symbols/SVL/news")
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(requestBody))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
@@ -145,6 +157,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .post(String.format("%s/users/1/symbols/%s/news", SUBSCRIBE_ENDPOINT, symbolId))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(requestBody))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
@@ -163,6 +176,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .post(SUBSCRIBE_ENDPOINT + "/users/1/symbols/SVL/news")
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(requestBody))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
@@ -182,6 +196,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .post(SUBSCRIBE_ENDPOINT + "/users/1/symbols/SVL/news")
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(requestBody))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
@@ -202,6 +217,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .post(SUBSCRIBE_ENDPOINT + "/users/1/symbols/SVL/news")
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(requestBody))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
@@ -242,6 +258,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .delete(String.format("%s/users/1/symbols/%s/news/%s/%s", SUBSCRIBE_ENDPOINT, symbolId, notificationType, mediumId))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
@@ -256,6 +273,7 @@ class SubscriptionControllerTest {
         void test_deleteNewsSubscription_givenValidSubscriptionDetails_whenSubscriptionExistsAndRequestIsProcessed_thenRespondWithNoContentStatus() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                     .delete(String.format("%s/users/1/symbols/SVL/news/DIVDEC/927362871", SUBSCRIBE_ENDPOINT))
+                    .header("Authorization", getBasicAuthenticationHeader(username, password))
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNoContent())
@@ -267,6 +285,7 @@ class SubscriptionControllerTest {
         void test_deleteNewsSubscription_givenValidSubscriptionDetails_whenSubscriptionExistsButMediumDoesNotBelongToUserAndRequestIsProcessed_thenRespondWithNotFoundStatus() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .delete(String.format("%s/users/2/symbols/SVL/news/DIVDEC/927362871", SUBSCRIBE_ENDPOINT))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNotFound())
@@ -281,6 +300,7 @@ class SubscriptionControllerTest {
         void test_deleteNewsSubscription_givenValidSubscriptionDetails_whenSubscriptionDoesNotExistsAndRequestIsProcessed_thenRespondWithNotFoundStatus() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .delete(String.format("%s/users/2/symbols/BIL/news/DIVDEC/927362871", SUBSCRIBE_ENDPOINT))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNotFound())
@@ -330,6 +350,7 @@ class SubscriptionControllerTest {
         void test_createPriceNotificationSubscription_givenInvalidRequest_whenValidatingRequest_thenRespondWithBadRequestStatus(String userId, String symbolId, PriceNotificationRequest requestBody, String expectedError) throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                         .post(String.format("%s/users/%s/symbols/%s/price", SUBSCRIBE_ENDPOINT, userId, symbolId))
+                        .header("Authorization", getBasicAuthenticationHeader(username, password))
                         .content(gson.toJson(requestBody))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -345,6 +366,7 @@ class SubscriptionControllerTest {
         void test_createPriceNotificationSubscription_givenValidRequest_whenUserDoesNotExists_thenReturnNotFound() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                         .post(String.format("%s/users/2/symbols/SVL/price", SUBSCRIBE_ENDPOINT))
+                        .header("Authorization", getBasicAuthenticationHeader(username, password))
                         .content(gson.toJson(new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "927362871")))
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -360,6 +382,7 @@ class SubscriptionControllerTest {
         void test_createPriceNotificationSubscription_givenValidRequest_whenMediumIdDoesNotBelongToUser_thenReturnNotFound() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .post(String.format("%s/users/3/symbols/SVL/price", SUBSCRIBE_ENDPOINT))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "927362871")))
                             .accept(MediaType.APPLICATION_JSON)
                             .contentType(MediaType.APPLICATION_JSON))
@@ -375,6 +398,7 @@ class SubscriptionControllerTest {
         void test_createPriceNotificationSubscription_givenValidRequest_whenSymbolIdDoesNotExist_thenReturnNotFound() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .post(String.format("%s/users/1/symbols/BILL/price", SUBSCRIBE_ENDPOINT))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "927362871")))
                             .accept(MediaType.APPLICATION_JSON)
                             .contentType(MediaType.APPLICATION_JSON))
@@ -390,6 +414,7 @@ class SubscriptionControllerTest {
         void test_createPriceNotificationSubscription_givenValidRequest_whenSubscriptionExists_thenReturnConflict() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .post(String.format("%s/users/1/symbols/SVL/price", SUBSCRIBE_ENDPOINT))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "927362871")))
                             .accept(MediaType.APPLICATION_JSON)
                             .contentType(MediaType.APPLICATION_JSON))
@@ -405,6 +430,7 @@ class SubscriptionControllerTest {
         void test_createPriceNotificationSubscription_givenValidRequest_whenRequestHadBeenProcessed_thenReturnCreated() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .post(String.format("%s/users/1/symbols/TJH/price", SUBSCRIBE_ENDPOINT))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "927362871")))
                             .accept(MediaType.APPLICATION_JSON)
                             .contentType(MediaType.APPLICATION_JSON))
@@ -454,6 +480,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .delete(String.format("%s/users/1/symbols/%s/price/%s/%s", SUBSCRIBE_ENDPOINT, symbolId, notificationType, mediumId))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
@@ -468,6 +495,7 @@ class SubscriptionControllerTest {
         void test_deleteNewsSubscription_givenValidSubscriptionDetails_whenSubscriptionExistsAndRequestIsProcessed_thenRespondWithNoContentStatus() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .delete(String.format("%s/users/1/symbols/TJH/price/%s/927362871", SUBSCRIBE_ENDPOINT, PriceTargetType.PRC_VAL_UP_ALL.toString()))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNoContent())
@@ -479,6 +507,7 @@ class SubscriptionControllerTest {
         void test_deleteNewsSubscription_givenValidSubscriptionDetails_whenSubscriptionExistsButMediumDoesNotBelongToUserAndRequestIsProcessed_thenRespondWithNotFoundStatus() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .delete(String.format("%s/users/2/symbols/TJH/price/%s/927362871", SUBSCRIBE_ENDPOINT, PriceTargetType.PRC_VAL_UP_ALL.toString()))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNotFound())
@@ -493,6 +522,7 @@ class SubscriptionControllerTest {
         void test_deleteNewsSubscription_givenValidSubscriptionDetails_whenSubscriptionDoesNotExistsAndRequestIsProcessed_thenRespondWithNotFoundStatus() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .delete(String.format("%s/users/1/symbols/BIL/news/DIVDEC/927362871", SUBSCRIBE_ENDPOINT))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNotFound())
@@ -547,6 +577,7 @@ class SubscriptionControllerTest {
         void test_getNotificationSubscriptions_GivenRequestWithNoQueryParams_whenSubscriptionDataIsAvailable_thenReturnDefaultPageData () throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .get(String.format("%s/%s", SUBSCRIBE_ENDPOINT, "927362871"))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isOk())
@@ -566,6 +597,7 @@ class SubscriptionControllerTest {
         void test_getNotificationSubscriptions_givenQueryParameters_whenProcessingRequest_thenReturnGracefulResponse(Integer pageNumber, Integer pageSize, String type, Integer status, Integer expectedPageNumber, Integer expectedPageSize) throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .get(String.format("%s/%s", SUBSCRIBE_ENDPOINT, "927362871"))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .param("page", pageNumber.toString())
                             .param("size", pageSize.toString())
                             .param("type", type)
@@ -599,6 +631,7 @@ class SubscriptionControllerTest {
         void test_getNotificationSubscriptions_givenTypeQueryParameter_whenParameterIsInvalid_thenReturnBadResponse() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .get(String.format("%s/%s", SUBSCRIBE_ENDPOINT, "927362871"))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .param("type", "BAD_TYPE")
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
