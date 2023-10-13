@@ -5,6 +5,7 @@ import com.google.gson.Gson;
 import com.shadow.jse_middleware_service.constants.NewsType;
 import com.shadow.jse_middleware_service.constants.NotificationMediumType;
 import com.shadow.jse_middleware_service.constants.PriceTargetType;
+import com.shadow.jse_middleware_service.constants.SubscriptionType;
 import com.shadow.jse_middleware_service.controller.request.NewsSubscriptionRequest;
 import com.shadow.jse_middleware_service.controller.request.PriceNotificationRequest;
 import com.shadow.jse_middleware_service.util.CustomEnumUtils;
@@ -562,11 +563,12 @@ class SubscriptionControllerTest {
         @ParameterizedTest
         @MethodSource("getSubscriptionTestParameters")
         @DisplayName("Test response for query params")
-        void test_getNotificationSubscriptions_givenQueryParameters_whenProcessingRequest_thenReturnGracefulResponse(Integer pageNumber, Integer pageSize, Integer status, Integer expectedPageNumber, Integer expectedPageSize) throws Exception {
+        void test_getNotificationSubscriptions_givenQueryParameters_whenProcessingRequest_thenReturnGracefulResponse(Integer pageNumber, Integer pageSize, String type, Integer status, Integer expectedPageNumber, Integer expectedPageSize) throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .get(String.format("%s/%s", SUBSCRIBE_ENDPOINT, "927362871"))
                             .param("page", pageNumber.toString())
                             .param("size", pageSize.toString())
+                            .param("type", type)
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().is(status))
@@ -583,12 +585,28 @@ class SubscriptionControllerTest {
 
         private Stream<Arguments> getSubscriptionTestParameters() {
             return Stream.of(
-                    // Given: page number, page size | Expected: return status, page number, page size
-                    Arguments.of(-1, 0, HttpStatus.OK.value(), 0, pageDefaultSize),
-                    Arguments.of(0, maxPageSize+1, HttpStatus.OK.value(), 0, maxPageSize),
-                    Arguments.of(2, maxPageSize, HttpStatus.NOT_FOUND.value(), 2, 0),
-                    Arguments.of(0, 1, HttpStatus.OK.value(), 0, 1)
+                    // Given: page number, page size, type | Expected: return status, page number, page size
+                    Arguments.of(-1, 0, null, HttpStatus.OK.value(), 0, pageDefaultSize),
+                    Arguments.of(0, maxPageSize+1, null, HttpStatus.OK.value(), 0, maxPageSize),
+                    Arguments.of(2, maxPageSize, null, HttpStatus.NOT_FOUND.value(), 2, 0),
+                    Arguments.of(0, 1, null, HttpStatus.OK.value(), 0, 1),
+                    Arguments.of(0, 10,  SubscriptionType.NEWS.toString(), HttpStatus.OK.value(), 0, 3)
             );
+        }
+
+        @Test
+        @DisplayName("Test bad response for type query param")
+        void test_getNotificationSubscriptions_givenTypeQueryParameter_whenParameterIsInvalid_thenReturnBadResponse() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                            .get(String.format("%s/%s", SUBSCRIBE_ENDPOINT, "927362871"))
+                            .param("type", "BAD_TYPE")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").hasJsonPath())
+                    .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
+                    .andExpect(jsonPath(String.format("$.errors[?(@.error == \"Validation Error\" && @.message == \"getSubscriptions.subscriptionType: Choice Not valid. Valid choices include: %s\")]", CustomEnumUtils.getNames(SubscriptionType.class))).exists())
+                    .andDo(print());
         }
 
     }
