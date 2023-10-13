@@ -1,5 +1,6 @@
 package com.shadow.jse_middleware_service.service;
 
+import com.shadow.jse_middleware_service.constants.SubscriptionType;
 import com.shadow.jse_middleware_service.exception.ResourceConflictException;
 import com.shadow.jse_middleware_service.exception.ResourceNotFoundException;
 import com.shadow.jse_middleware_service.repository.SymbolRepository;
@@ -35,6 +36,11 @@ public class SubscriptionManagementService {
 
     public Page<NotificationSubscription> getNotificationSubscription(String mediumId, PageRequest pageRequest) {
         return notificationSubscriptionService.getSubscriptionsByPage(mediumId, pageRequest);
+    }
+
+    public Page<NotificationSubscription> getNotificationSubscription(String mediumId, String subscriptionType, PageRequest pageRequest) {
+
+        return notificationSubscriptionService.getSubscriptionsByPage(mediumId, SubscriptionType.getSubTypes(SubscriptionType.valueOf(subscriptionType.toUpperCase())), pageRequest);
     }
 
     public void createNewsNotification(String user_id, String symbol, String newsType, String mediumType, String medium_id ) {
