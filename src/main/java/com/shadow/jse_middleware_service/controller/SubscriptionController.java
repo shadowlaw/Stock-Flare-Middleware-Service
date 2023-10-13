@@ -3,6 +3,7 @@ package com.shadow.jse_middleware_service.controller;
 import com.shadow.jse_middleware_service.annotations.ValidEnumConstant;
 import com.shadow.jse_middleware_service.constants.NewsType;
 import com.shadow.jse_middleware_service.constants.PriceTargetType;
+import com.shadow.jse_middleware_service.constants.SubscriptionType;
 import com.shadow.jse_middleware_service.controller.request.NewsSubscriptionRequest;
 import com.shadow.jse_middleware_service.controller.request.PriceNotificationRequest;
 import com.shadow.jse_middleware_service.controller.response.ErrorResponse;
@@ -72,7 +73,9 @@ public class SubscriptionController {
             @Pattern(regexp = MEDIUM_ID_REGEX, message = "Invalid medium id format")
             String mediumId,
             @RequestParam(name = "page", defaultValue = "0") Integer pageNumber,
-            @RequestParam(name = "size", defaultValue = "${app.api.subscription.page.default_size}") Integer pageSize
+            @RequestParam(name = "size", defaultValue = "${app.api.subscription.page.default_size}") Integer pageSize,
+            @ValidEnumConstant(enumClazz = SubscriptionType.class)
+            @RequestParam(name = "type", defaultValue = "ALL") String subscriptionType
     ){
 
         MDC.put(REQUEST_ID, "GET_SUBSCRIPTIONS");
@@ -83,8 +86,15 @@ public class SubscriptionController {
 
         MDC.put(PAGE_NUMBER, String.valueOf(pageRequest.getPageNumber()));
         MDC.put(PAGE_SIZE, String.valueOf(pageRequest.getOffset()));
+        MDC.put(TYPE, subscriptionType);
 
-        Page<NotificationSubscription> subscriptionPage = subscriptionManagementService.getNotificationSubscription(mediumId, pageRequest);
+        Page<NotificationSubscription> subscriptionPage;
+
+        if (subscriptionType.equalsIgnoreCase(SubscriptionType.ALL.toString())) {
+            subscriptionPage = subscriptionManagementService.getNotificationSubscription(mediumId, pageRequest);
+        } else {
+            subscriptionPage = subscriptionManagementService.getNotificationSubscription(mediumId, subscriptionType, pageRequest);
+        }
 
         HttpStatus responseStatus = subscriptionPage.isEmpty() ? HttpStatus.NOT_FOUND : HttpStatus.OK;
 
