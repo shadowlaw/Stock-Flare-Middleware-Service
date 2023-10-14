@@ -48,7 +48,7 @@ import static com.shadow.jse_middleware_service.constants.Validation.SYMBOL_ID_R
 @Validated
 @Slf4j
 @RestController
-@RequestMapping(value = "api/subscriptions", produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "api/subscriptions", produces = MediaType.APPLICATION_JSON_VALUE)
 public class SubscriptionController {
 
     @Autowired

@@ -33,7 +33,7 @@ import static com.shadow.jse_middleware_service.constants.LoggingConstants.REQUE
 @Tag(name = "Symbol data endpoints",  description = "Provides symbol data details")
 @Validated
 @RestController
-@RequestMapping(value = "api/symbol", consumes = MediaType.APPLICATION_JSON_VALUE, produces = MediaType.APPLICATION_JSON_VALUE)
+@RequestMapping(value = "api/symbol", produces = MediaType.APPLICATION_JSON_VALUE)
 @Slf4j
 public class SymbolController {
 
