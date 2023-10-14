@@ -6,8 +6,11 @@ import com.shadow.jse_middleware_service.repository.entity.key.NotificationSubsc
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -42,5 +45,13 @@ public class NotificationSubscriptionService {
             return Optional.empty();
         }
         return Optional.of(notificationSubscriptionRepository.getById(new NotificationSubscriptionCompositeKey(symbol, notificationType, mediumId)));
+    }
+
+    public Page<NotificationSubscription> getSubscriptionsByPage(String mediumId, PageRequest pageRequest) {
+        return notificationSubscriptionRepository.findByNotificationSubscriptionCompositeKeyMediumId(mediumId, pageRequest);
+    }
+
+    public Page<NotificationSubscription> getSubscriptionsByPage(String mediumId, List<String> subscriptionTypes, PageRequest pageRequest) {
+        return notificationSubscriptionRepository.findByNotificationSubscriptionCompositeKeyMediumIdAndNotificationSubscriptionCompositeKeyNotificationTypeIn(mediumId, subscriptionTypes, pageRequest);
     }
 }

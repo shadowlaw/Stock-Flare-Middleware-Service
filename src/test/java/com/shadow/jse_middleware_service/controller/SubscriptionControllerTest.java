@@ -5,14 +5,16 @@ import com.google.gson.Gson;
 import com.shadow.jse_middleware_service.constants.NewsType;
 import com.shadow.jse_middleware_service.constants.NotificationMediumType;
 import com.shadow.jse_middleware_service.constants.PriceTargetType;
+import com.shadow.jse_middleware_service.constants.SubscriptionType;
 import com.shadow.jse_middleware_service.controller.request.NewsSubscriptionRequest;
 import com.shadow.jse_middleware_service.controller.request.PriceNotificationRequest;
-import org.apache.commons.lang3.EnumUtils;
+import com.shadow.jse_middleware_service.util.CustomEnumUtils;
 import org.junit.jupiter.api.*;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.HttpStatus;
@@ -24,6 +26,7 @@ import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import java.util.stream.Stream;
 
 import static com.shadow.jse_middleware_service.constants.TestConstants.SUBSCRIBE_ENDPOINT;
+import static com.shadow.jse_middleware_service.util.HttpUtils.getBasicAuthenticationHeader;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -36,6 +39,12 @@ class SubscriptionControllerTest {
     private MockMvc mockMvc;
 
     Gson gson = new Gson();
+
+    @Value("${spring.security.user.name}")
+    private String username;
+
+    @Value("${spring.security.user.password}")
+    private String password;
 
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @Nested
@@ -51,6 +60,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                     .post(SUBSCRIBE_ENDPOINT + "/users/1/symbols/SVL/news")
+                     .header("Authorization", getBasicAuthenticationHeader(username, password))
                     .content(gson.toJson(requestBody))
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON))
@@ -69,6 +79,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .post(SUBSCRIBE_ENDPOINT + "/users/1/symbols/SVL/news")
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(requestBody))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
@@ -87,6 +98,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .post(SUBSCRIBE_ENDPOINT + "/users/1/symbols/SVVL/news")
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(requestBody))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
@@ -105,6 +117,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .post(SUBSCRIBE_ENDPOINT + "/users/2/symbols/SVL/news")
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(requestBody))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
@@ -124,6 +137,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .post(SUBSCRIBE_ENDPOINT + "/users/3/symbols/SVL/news")
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(requestBody))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
@@ -143,6 +157,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .post(String.format("%s/users/1/symbols/%s/news", SUBSCRIBE_ENDPOINT, symbolId))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(requestBody))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
@@ -161,6 +176,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .post(SUBSCRIBE_ENDPOINT + "/users/1/symbols/SVL/news")
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(requestBody))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
@@ -168,7 +184,7 @@ class SubscriptionControllerTest {
                     .andExpect(jsonPath("$.status").hasJsonPath())
                     .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
                     .andExpect(jsonPath(String.format("$.errors[?(@.error == \"Validation Error\" && @.message == \"Field: newsType - Choice Not valid. Valid choices include: %s\")]",
-                            EnumUtils.getEnumList(NewsType.class).toString().replace("[", "").replace("]", ""))).exists())
+                            CustomEnumUtils.getNames(NewsType.class))).exists())
                     .andDo(print());
         }
 
@@ -180,6 +196,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .post(SUBSCRIBE_ENDPOINT + "/users/1/symbols/SVL/news")
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(requestBody))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
@@ -187,7 +204,7 @@ class SubscriptionControllerTest {
                     .andExpect(jsonPath("$.status").hasJsonPath())
                     .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
                     .andExpect(jsonPath(String.format("$.errors[?(@.error == \"Validation Error\" && @.message == \"Field: mediumType - Choice Not valid. Valid choices include: %s\")]",
-                            EnumUtils.getEnumList(NotificationMediumType.class).toString().replace("[", "").replace("]", ""))).exists())
+                            CustomEnumUtils.getNames(NotificationMediumType.class))).exists())
                     .andDo(print());
         }
 
@@ -200,6 +217,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .post(SUBSCRIBE_ENDPOINT + "/users/1/symbols/SVL/news")
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(requestBody))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
@@ -240,6 +258,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .delete(String.format("%s/users/1/symbols/%s/news/%s/%s", SUBSCRIBE_ENDPOINT, symbolId, notificationType, mediumId))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
@@ -254,6 +273,7 @@ class SubscriptionControllerTest {
         void test_deleteNewsSubscription_givenValidSubscriptionDetails_whenSubscriptionExistsAndRequestIsProcessed_thenRespondWithNoContentStatus() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                     .delete(String.format("%s/users/1/symbols/SVL/news/DIVDEC/927362871", SUBSCRIBE_ENDPOINT))
+                    .header("Authorization", getBasicAuthenticationHeader(username, password))
                     .contentType(MediaType.APPLICATION_JSON)
                     .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNoContent())
@@ -265,6 +285,7 @@ class SubscriptionControllerTest {
         void test_deleteNewsSubscription_givenValidSubscriptionDetails_whenSubscriptionExistsButMediumDoesNotBelongToUserAndRequestIsProcessed_thenRespondWithNotFoundStatus() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .delete(String.format("%s/users/2/symbols/SVL/news/DIVDEC/927362871", SUBSCRIBE_ENDPOINT))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNotFound())
@@ -279,6 +300,7 @@ class SubscriptionControllerTest {
         void test_deleteNewsSubscription_givenValidSubscriptionDetails_whenSubscriptionDoesNotExistsAndRequestIsProcessed_thenRespondWithNotFoundStatus() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .delete(String.format("%s/users/2/symbols/BIL/news/DIVDEC/927362871", SUBSCRIBE_ENDPOINT))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNotFound())
@@ -295,7 +317,7 @@ class SubscriptionControllerTest {
 
             String expectedSymbolMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deleteNewsSubscription.symbol: symbol id must be alphanumeric and 3-9 characters in length\")]";
             String expectedMediumIdMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deleteNewsSubscription.mediumId: Invalid medium id format\")]";
-            String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deleteNewsSubscription.newsType: Choice Not valid. Valid choices include: "+NewsType.getNames()+"\")]";
+            String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deleteNewsSubscription.newsType: Choice Not valid. Valid choices include: "+ CustomEnumUtils.getNames(NewsType.class)+"\")]";
 
             return Stream.of(
                     // Invalid Symbol Parameters
@@ -328,6 +350,7 @@ class SubscriptionControllerTest {
         void test_createPriceNotificationSubscription_givenInvalidRequest_whenValidatingRequest_thenRespondWithBadRequestStatus(String userId, String symbolId, PriceNotificationRequest requestBody, String expectedError) throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                         .post(String.format("%s/users/%s/symbols/%s/price", SUBSCRIBE_ENDPOINT, userId, symbolId))
+                        .header("Authorization", getBasicAuthenticationHeader(username, password))
                         .content(gson.toJson(requestBody))
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
@@ -343,6 +366,7 @@ class SubscriptionControllerTest {
         void test_createPriceNotificationSubscription_givenValidRequest_whenUserDoesNotExists_thenReturnNotFound() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                         .post(String.format("%s/users/2/symbols/SVL/price", SUBSCRIBE_ENDPOINT))
+                        .header("Authorization", getBasicAuthenticationHeader(username, password))
                         .content(gson.toJson(new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "927362871")))
                         .accept(MediaType.APPLICATION_JSON)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -358,6 +382,7 @@ class SubscriptionControllerTest {
         void test_createPriceNotificationSubscription_givenValidRequest_whenMediumIdDoesNotBelongToUser_thenReturnNotFound() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .post(String.format("%s/users/3/symbols/SVL/price", SUBSCRIBE_ENDPOINT))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "927362871")))
                             .accept(MediaType.APPLICATION_JSON)
                             .contentType(MediaType.APPLICATION_JSON))
@@ -373,6 +398,7 @@ class SubscriptionControllerTest {
         void test_createPriceNotificationSubscription_givenValidRequest_whenSymbolIdDoesNotExist_thenReturnNotFound() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .post(String.format("%s/users/1/symbols/BILL/price", SUBSCRIBE_ENDPOINT))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "927362871")))
                             .accept(MediaType.APPLICATION_JSON)
                             .contentType(MediaType.APPLICATION_JSON))
@@ -388,6 +414,7 @@ class SubscriptionControllerTest {
         void test_createPriceNotificationSubscription_givenValidRequest_whenSubscriptionExists_thenReturnConflict() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .post(String.format("%s/users/1/symbols/SVL/price", SUBSCRIBE_ENDPOINT))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "927362871")))
                             .accept(MediaType.APPLICATION_JSON)
                             .contentType(MediaType.APPLICATION_JSON))
@@ -403,6 +430,7 @@ class SubscriptionControllerTest {
         void test_createPriceNotificationSubscription_givenValidRequest_whenRequestHadBeenProcessed_thenReturnCreated() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .post(String.format("%s/users/1/symbols/TJH/price", SUBSCRIBE_ENDPOINT))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .content(gson.toJson(new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), "927362871")))
                             .accept(MediaType.APPLICATION_JSON)
                             .contentType(MediaType.APPLICATION_JSON))
@@ -418,7 +446,7 @@ class SubscriptionControllerTest {
             String validMediumId="123456789";
             String expectedSymbolMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"createPriceNotificationSubscription.symbolId: symbol id must be alphanumeric and 3-9 characters in length\")]";
             String expectedMediumIdMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"Field: mediumId - Invalid medium id format\")]";
-            String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"Field: notificationType - Choice Not valid. Valid choices include: "+PriceTargetType.getNames()+"\")]";
+            String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"Field: notificationType - Choice Not valid. Valid choices include: "+CustomEnumUtils.getNames(PriceTargetType.class)+"\")]";
 
             PriceNotificationRequest priceNotificationRequest = new PriceNotificationRequest(PriceTargetType.PRC_VAL_UP_ALL.toString(), validMediumId);
 
@@ -452,6 +480,7 @@ class SubscriptionControllerTest {
 
             mockMvc.perform(MockMvcRequestBuilders
                             .delete(String.format("%s/users/1/symbols/%s/price/%s/%s", SUBSCRIBE_ENDPOINT, symbolId, notificationType, mediumId))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isBadRequest())
@@ -466,6 +495,7 @@ class SubscriptionControllerTest {
         void test_deleteNewsSubscription_givenValidSubscriptionDetails_whenSubscriptionExistsAndRequestIsProcessed_thenRespondWithNoContentStatus() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .delete(String.format("%s/users/1/symbols/TJH/price/%s/927362871", SUBSCRIBE_ENDPOINT, PriceTargetType.PRC_VAL_UP_ALL.toString()))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNoContent())
@@ -477,6 +507,7 @@ class SubscriptionControllerTest {
         void test_deleteNewsSubscription_givenValidSubscriptionDetails_whenSubscriptionExistsButMediumDoesNotBelongToUserAndRequestIsProcessed_thenRespondWithNotFoundStatus() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .delete(String.format("%s/users/2/symbols/TJH/price/%s/927362871", SUBSCRIBE_ENDPOINT, PriceTargetType.PRC_VAL_UP_ALL.toString()))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNotFound())
@@ -491,6 +522,7 @@ class SubscriptionControllerTest {
         void test_deleteNewsSubscription_givenValidSubscriptionDetails_whenSubscriptionDoesNotExistsAndRequestIsProcessed_thenRespondWithNotFoundStatus() throws Exception {
             mockMvc.perform(MockMvcRequestBuilders
                             .delete(String.format("%s/users/1/symbols/BIL/news/DIVDEC/927362871", SUBSCRIBE_ENDPOINT))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
                             .contentType(MediaType.APPLICATION_JSON)
                             .accept(MediaType.APPLICATION_JSON))
                     .andExpect(status().isNotFound())
@@ -507,7 +539,7 @@ class SubscriptionControllerTest {
 
             String expectedSymbolMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deletePriceNotificationSubscription.symbolId: symbol id must be alphanumeric and 3-9 characters in length\")]";
             String expectedMediumIdMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deletePriceNotificationSubscription.mediumId: Invalid medium id format\")]";
-            String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deletePriceNotificationSubscription.notificationType: Choice Not valid. Valid choices include: "+PriceTargetType.getNames()+"\")]";
+            String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deletePriceNotificationSubscription.notificationType: Choice Not valid. Valid choices include: "+CustomEnumUtils.getNames(PriceTargetType.class)+"\")]";
 
             return Stream.of(
                     // Invalid Symbol Parameters
@@ -527,5 +559,88 @@ class SubscriptionControllerTest {
                     Arguments.of(ValidSymbolId, validMediumId, null, expectedNewsTypeMessage)
             );
         }
+    }
+
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @Nested
+    @DisplayName("Notification Subscription Data Retrieval Tests")
+    class NotificationSubscriptionDataRetrieval {
+
+        @Value("${app.api.subscription.page.default_size}")
+        private Integer pageDefaultSize;
+
+        @Value("${app.api.subscription.page.max_page_size}")
+        private Integer maxPageSize;
+
+        @Test
+        @DisplayName("Successful call without parameters")
+        void test_getNotificationSubscriptions_GivenRequestWithNoQueryParams_whenSubscriptionDataIsAvailable_thenReturnDefaultPageData () throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                            .get(String.format("%s/%s", SUBSCRIBE_ENDPOINT, "927362871"))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.status").hasJsonPath())
+                    .andExpect(jsonPath("$.status").value(HttpStatus.OK.value()))
+                    .andExpect(jsonPath("$.page.content").hasJsonPath())
+                    .andExpect(jsonPath("$.page.numberOfElements").hasJsonPath())
+                    .andExpect(jsonPath(String.format("$.page[?(@.numberOfElements <= %s)]", pageDefaultSize)).exists())
+                    .andExpect(jsonPath("$.page.pageable.pageNumber").hasJsonPath())
+                    .andExpect(jsonPath("$.page.pageable.pageNumber").value(0))
+                    .andDo(print());
+        }
+
+        @ParameterizedTest
+        @MethodSource("getSubscriptionTestParameters")
+        @DisplayName("Test response for query params")
+        void test_getNotificationSubscriptions_givenQueryParameters_whenProcessingRequest_thenReturnGracefulResponse(Integer pageNumber, Integer pageSize, String type, Integer status, Integer expectedPageNumber, Integer expectedPageSize) throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                            .get(String.format("%s/%s", SUBSCRIBE_ENDPOINT, "927362871"))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
+                            .param("page", pageNumber.toString())
+                            .param("size", pageSize.toString())
+                            .param("type", type)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().is(status))
+                    .andExpect(jsonPath("$.status").hasJsonPath())
+                    .andExpect(jsonPath("$.status").value(status))
+                    .andExpect(jsonPath("$.page.content").hasJsonPath())
+                    .andExpect(jsonPath(String.format("$.page[?(@.content.length() == %s)]", expectedPageSize)).exists())
+                    .andExpect(jsonPath("$.page.numberOfElements").hasJsonPath())
+                    .andExpect(jsonPath(String.format("$.page[?(@.numberOfElements <= %s)]", expectedPageSize)).exists())
+                    .andExpect(jsonPath("$.page.pageable.pageNumber").hasJsonPath())
+                    .andExpect(jsonPath("$.page.pageable.pageNumber").value(expectedPageNumber))
+                    .andDo(print());
+        }
+
+        private Stream<Arguments> getSubscriptionTestParameters() {
+            return Stream.of(
+                    // Given: page number, page size, type | Expected: return status, page number, page size
+                    Arguments.of(-1, 0, null, HttpStatus.OK.value(), 0, pageDefaultSize),
+                    Arguments.of(0, maxPageSize+1, null, HttpStatus.OK.value(), 0, maxPageSize),
+                    Arguments.of(2, maxPageSize, null, HttpStatus.NOT_FOUND.value(), 2, 0),
+                    Arguments.of(0, 1, null, HttpStatus.OK.value(), 0, 1),
+                    Arguments.of(0, 10,  SubscriptionType.NEWS.toString(), HttpStatus.OK.value(), 0, 3)
+            );
+        }
+
+        @Test
+        @DisplayName("Test bad response for type query param")
+        void test_getNotificationSubscriptions_givenTypeQueryParameter_whenParameterIsInvalid_thenReturnBadResponse() throws Exception {
+            mockMvc.perform(MockMvcRequestBuilders
+                            .get(String.format("%s/%s", SUBSCRIBE_ENDPOINT, "927362871"))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
+                            .param("type", "BAD_TYPE")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON))
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.status").hasJsonPath())
+                    .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
+                    .andExpect(jsonPath(String.format("$.errors[?(@.error == \"Validation Error\" && @.message == \"getSubscriptions.subscriptionType: Choice Not valid. Valid choices include: %s\")]", CustomEnumUtils.getNames(SubscriptionType.class))).exists())
+                    .andDo(print());
+        }
+
     }
 }

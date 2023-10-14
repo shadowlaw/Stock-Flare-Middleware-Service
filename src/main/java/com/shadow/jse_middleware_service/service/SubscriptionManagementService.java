@@ -1,5 +1,6 @@
 package com.shadow.jse_middleware_service.service;
 
+import com.shadow.jse_middleware_service.constants.SubscriptionType;
 import com.shadow.jse_middleware_service.exception.ResourceConflictException;
 import com.shadow.jse_middleware_service.exception.ResourceNotFoundException;
 import com.shadow.jse_middleware_service.repository.SymbolRepository;
@@ -8,9 +9,9 @@ import com.shadow.jse_middleware_service.repository.entity.NotificationSubscript
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import java.util.Optional;
@@ -33,7 +34,14 @@ public class SubscriptionManagementService {
     @Autowired
     private NotificationSubscriptionService notificationSubscriptionService;
 
-    Logger logger = LoggerFactory.getLogger(SubscriptionManagementService.class);
+    public Page<NotificationSubscription> getNotificationSubscription(String mediumId, PageRequest pageRequest) {
+        return notificationSubscriptionService.getSubscriptionsByPage(mediumId, pageRequest);
+    }
+
+    public Page<NotificationSubscription> getNotificationSubscription(String mediumId, String subscriptionType, PageRequest pageRequest) {
+
+        return notificationSubscriptionService.getSubscriptionsByPage(mediumId, SubscriptionType.getSubTypes(SubscriptionType.valueOf(subscriptionType.toUpperCase())), pageRequest);
+    }
 
     public void createNewsNotification(String user_id, String symbol, String newsType, String mediumType, String medium_id ) {
         if (!userRepository.existsById(Integer.parseInt(user_id))) {
