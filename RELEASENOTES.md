@@ -1,8 +1,4 @@
-# Release Notes for v0.3.0
+# Release Notes for v0.3.1
 
-# New:
-- Retrieve paginated list of symbols 
-- Retrieve paginated list of notification subscriptions
-
-# Security
-- all endpoints except documentation requires basic auth credentials
+# Enhancements:
+- Replace user id requirement for notification subscription endpoint 
