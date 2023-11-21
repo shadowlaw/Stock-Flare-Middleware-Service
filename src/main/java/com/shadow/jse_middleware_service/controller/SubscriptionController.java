@@ -110,9 +110,11 @@ public class SubscriptionController {
             @ApiResponse(responseCode = "400", description = "The user submitted Bad Request.", content = @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = MediaType.APPLICATION_JSON_VALUE)),
             @ApiResponse(responseCode = "500", description = "Internal Error", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
     })
-    @PostMapping("users/{user_id}/symbols/{symbol}/news")
+    @PostMapping("{medium_id}/symbols/{symbol}/news")
     public ResponseEntity<?> newsSubscribe (
-            @PathVariable("user_id") String user_id,
+            @PathVariable("medium_id")
+            @Pattern(regexp = MEDIUM_ID_REGEX, message = "Invalid medium id format")
+            String mediumId,
             @PathVariable("symbol")
             @Pattern(regexp = SYMBOL_ID_REGEX,
                     message = "symbol id must be alphanumeric and 3-9 characters in length"
@@ -121,8 +123,7 @@ public class SubscriptionController {
 
         MDC.put(REQUEST_ID, "CREATE_NEWS_NOTIFICATION");
 
-        subscriptionManagementService.createNewsNotification(user_id, symbol, subscriptionRequest.getNewsType(),
-                subscriptionRequest.getMediumType(), subscriptionRequest.getMediumId());
+        subscriptionManagementService.createNewsNotification(mediumId, symbol, subscriptionRequest.getNewsType());
 
         Response response = new Response(HttpStatus.CREATED.value());
 
@@ -135,9 +136,8 @@ public class SubscriptionController {
             @ApiResponse(responseCode = "400", description = "The user submitted Bad Request.", content = @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = MediaType.APPLICATION_JSON_VALUE)),
             @ApiResponse(responseCode = "500", description = "Internal Error", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
     })
-    @DeleteMapping("users/{user_id}/symbols/{symbol_id}/news/{notification_type}/{medium_id}")
+    @DeleteMapping("{medium_id}/symbols/{symbol_id}/news/{notification_type}")
     public ResponseEntity<?> deleteNewsSubscription (
-            @PathVariable("user_id") String userId,
             @PathVariable("symbol_id")
             @Pattern(regexp = SYMBOL_ID_REGEX, message = "symbol id must be alphanumeric and 3-9 characters in length")
             String symbol,
@@ -151,7 +151,7 @@ public class SubscriptionController {
 
         MDC.put(REQUEST_ID, "DELETE_NEWS_NOTIFICATION");
 
-        subscriptionManagementService.deleteNewsNotification(userId, symbol, newsType, mediumId);
+        subscriptionManagementService.deleteNewsNotification(symbol, newsType, mediumId);
 
         Response response = new Response(HttpStatus.NO_CONTENT.value());
 
@@ -164,9 +164,11 @@ public class SubscriptionController {
             @ApiResponse(responseCode = "400", description = "The user submitted Bad Request.", content = @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = MediaType.APPLICATION_JSON_VALUE)),
             @ApiResponse(responseCode = "500", description = "Internal Error", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
     })
-    @PostMapping("users/{user_id}/symbols/{symbol}/price")
+    @PostMapping("{medium_id}/symbols/{symbol}/price")
     public ResponseEntity<?> createPriceNotificationSubscription(
-            @PathVariable("user_id") String userId,
+            @PathVariable("medium_id")
+            @Pattern(regexp = MEDIUM_ID_REGEX, message = "Invalid medium id format")
+            String mediumId,
             @PathVariable("symbol")
             @Pattern(regexp = SYMBOL_ID_REGEX,
                     message = "symbol id must be alphanumeric and 3-9 characters in length"
@@ -174,11 +176,10 @@ public class SubscriptionController {
             @RequestBody @Valid PriceNotificationRequest priceNotificationRequest
     ) {
         MDC.put(REQUEST_ID, "CREATE_PRICE_NOTIFICATION");
-        MDC.put(USER_ID, userId);
         MDC.put(SYMBOL, symbolId);
-        MDC.put(MEDIUM_ID, priceNotificationRequest.getMediumId());
+        MDC.put(MEDIUM_ID, mediumId);
 
-        subscriptionManagementService.createPriceNotification(userId, symbolId, priceNotificationRequest.getNotificationType(), priceNotificationRequest.getMediumId());
+        subscriptionManagementService.createPriceNotification(mediumId, symbolId, priceNotificationRequest.getNotificationType());
 
         Response response = new Response(HttpStatus.CREATED.value());
 
@@ -192,9 +193,8 @@ public class SubscriptionController {
             @ApiResponse(responseCode = "400", description = "The user submitted Bad Request.", content = @Content(schema = @Schema(implementation = ErrorResponse.class), mediaType = MediaType.APPLICATION_JSON_VALUE)),
             @ApiResponse(responseCode = "500", description = "Internal Error", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE))
     })
-    @DeleteMapping("users/{user_id}/symbols/{symbol}/price/{notification_type}/{medium_id}")
+    @DeleteMapping("{medium_id}/symbols/{symbol}/price/{notification_type}")
     public ResponseEntity<?> deletePriceNotificationSubscription(
-            @PathVariable("user_id") String userId,
             @Pattern(regexp = SYMBOL_ID_REGEX,
                     message = "symbol id must be alphanumeric and 3-9 characters in length"
             )
@@ -204,12 +204,11 @@ public class SubscriptionController {
             @Pattern(regexp = MEDIUM_ID_REGEX, message = "Invalid medium id format")
             @PathVariable("medium_id") String mediumId
     ){
-        MDC.put(REQUEST_ID, "CREATE_PRICE_NOTIFICATION");
-        MDC.put(USER_ID, userId);
+        MDC.put(REQUEST_ID, "DELETE_PRICE_NOTIFICATION");
         MDC.put(SYMBOL, symbolId);
         MDC.put(MEDIUM_ID, mediumId);
 
-        subscriptionManagementService.deletePriceNotification(userId, symbolId, notificationType, mediumId);
+        subscriptionManagementService.deletePriceNotification(symbolId, notificationType, mediumId);
 
         Response response = new Response(HttpStatus.NO_CONTENT.value());
 

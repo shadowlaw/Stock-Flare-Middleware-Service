@@ -43,19 +43,14 @@ public class SubscriptionManagementService {
         return notificationSubscriptionService.getSubscriptionsByPage(mediumId, SubscriptionType.getSubTypes(SubscriptionType.valueOf(subscriptionType.toUpperCase())), pageRequest);
     }
 
-    public void createNewsNotification(String user_id, String symbol, String newsType, String mediumType, String medium_id ) {
-        if (!userRepository.existsById(Integer.parseInt(user_id))) {
-            throw new ResourceNotFoundException(String.format("Unable to find user with id %s", user_id), null);
+    public void createNewsNotification(String medium_id, String symbol, String newsType) {
+
+        if (!notificationMediumService.notificationMediumExist(medium_id)) {
+            throw new ResourceNotFoundException("medium not available for use", null);
         }
 
         if (!symbolRepository.existsById(symbol)) {
             throw new ResourceNotFoundException(String.format("Unable to find symbol with id %s", symbol), null);
-        }
-
-        if (!notificationMediumService.notificationMediumExist(medium_id)) {
-            notificationMediumService.createNotificationMedium(medium_id, user_id, mediumType);
-        } else if (!notificationMediumService.isMediumOwnedByUser(user_id, medium_id)) {
-            throw new ResourceConflictException("Notification medium not available for use", null);
         }
 
         if (notificationSubscriptionService.isSubscribed(newsType, symbol, medium_id)) {
@@ -65,23 +60,19 @@ public class SubscriptionManagementService {
         notificationSubscriptionService.subscribe(newsType, symbol, medium_id);
     }
 
-    public void deleteNewsNotification(String userId, String symbol, String notificationType, String mediumId) {
-        deleteSubscription(userId, symbol, notificationType, mediumId);
+    public void deleteNewsNotification(String symbol, String notificationType, String mediumId) {
+        deleteSubscription(symbol, notificationType, mediumId);
     }
 
-    public void createPriceNotification(String userId, String symbolId, String notificationType, String mediumId) {
+    public void createPriceNotification(String mediumId, String symbolId, String notificationType) {
         log.info("creating price notification");
 
-        if (!userRepository.existsById(Integer.parseInt(userId))) {
-            throw new ResourceNotFoundException(String.format("Unable to find user with id %s", userId), null);
+        if (!notificationMediumService.notificationMediumExist(mediumId)) {
+            throw new ResourceNotFoundException("Notification medium not available for use", null);
         }
 
         if (!symbolRepository.existsById(symbolId)) {
             throw new ResourceNotFoundException(String.format("Unable to find symbol with id %s", symbolId), null);
-        }
-
-        if (!notificationMediumService.isMediumOwnedByUser(userId, mediumId)) {
-            throw new ResourceNotFoundException("Notification medium not available for use", null);
         }
 
         if (notificationSubscriptionService.isSubscribed(notificationType, symbolId, mediumId)) {
@@ -93,17 +84,12 @@ public class SubscriptionManagementService {
         log.info("price notification created");
     }
 
-    public void deletePriceNotification(String userId, String symbolId, String notificationType, String mediumId) {
-        deleteSubscription(userId, symbolId, notificationType, mediumId);
+    public void deletePriceNotification(String symbolId, String notificationType, String mediumId) {
+        deleteSubscription(symbolId, notificationType, mediumId);
     }
 
-    private void deleteSubscription(String userId, String symbolId, String notificationType, String mediumId) {
+    private void deleteSubscription(String symbolId, String notificationType, String mediumId) {
         log.info(String.format("Deleting notification subscription [ %s - %s - %s ]", notificationType, symbolId, mediumId));
-
-        if (!notificationMediumService.isMediumOwnedByUser(userId, mediumId)) {
-            log.error(String.format("medium [%s] does not belong to user [%s]", mediumId, userId));
-            throw new ResourceNotFoundException("Subscription details not found", null);
-        }
 
         Optional<NotificationSubscription> subscriptionOptional = notificationSubscriptionService.getSubscription(notificationType, symbolId, mediumId);
 
