@@ -37,7 +37,9 @@ INSERT INTO `user` (id, username) VALUES('3','shadow 3');
 
 INSERT INTO notification_medium (medium_id, `user`, medium_type) VALUES ('927362871', 1, 'TELEGRAM');
 INSERT INTO notification_medium (medium_id, `user`, medium_type) VALUES ('927362872', 3, 'TELEGRAM');
+INSERT INTO notification_medium (medium_id, `user`, medium_type) VALUES ('123456789', 4, 'TELEGRAM');
 INSERT INTO notification_subscription (symbol, notif_type, medium_id) VALUES ('SVL', 'DIVDEC', '927362871');
+INSERT INTO notification_subscription (symbol, notif_type, medium_id) VALUES ('BRG', 'DIVDEC', '123456789');
 INSERT INTO notification_subscription (symbol, notif_type, medium_id) VALUES ('SVL', 'PRC_VAL_UP_ALL', '927362871');
 INSERT INTO notification_subscription (symbol, notif_type, medium_id) VALUES ('TJH', 'PRC_VAL_UP_ALL', '927362871');
 INSERT INTO notification_subscription (symbol, notif_type, medium_id) VALUES ('CPFV', 'DIVDEC', '927362871');

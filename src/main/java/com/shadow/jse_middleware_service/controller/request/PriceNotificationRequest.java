@@ -21,9 +21,4 @@ public class PriceNotificationRequest {
     @Schema(description = "Type of price notification to subscribe to", required = true)
     @ValidEnumConstant(enumClazz = PriceTargetType.class)
     String notificationType;
-
-    @Schema(description = "Medium Id to send  notification to", required = true)
-    @NotBlank
-    @Pattern(regexp = MEDIUM_ID_REGEX, message = "Invalid medium id format")
-    private String mediumId;
 }

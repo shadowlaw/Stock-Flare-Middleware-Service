@@ -23,12 +23,4 @@ public class NewsSubscriptionRequest {
     @ValidEnumConstant(enumClazz = NewsType.class)
     private String newsType;
 
-    @Schema(description = "Medium type of medium id", required = true)
-    @ValidEnumConstant(enumClazz = NotificationMediumType.class)
-    private String mediumType;
-
-    @Schema(description = "Medium Id to send  notification to", required = true)
-    @NotBlank
-    @Pattern(regexp = MEDIUM_ID_REGEX, message = "Invalid medium id format")
-    private String mediumId;
 }
