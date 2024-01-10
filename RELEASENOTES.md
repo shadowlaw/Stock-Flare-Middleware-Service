@@ -1,4 +1,4 @@
-# Release Notes for v0.3.1
+# Release Notes for v0.3.2
 
-# Enhancements:
-- Replace user id requirement for notification subscription endpoint 
+# Bugfix:
+- modify symbol id validation  
