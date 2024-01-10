@@ -117,7 +117,7 @@ public class SubscriptionController {
             String mediumId,
             @PathVariable("symbol")
             @Pattern(regexp = SYMBOL_ID_REGEX,
-                    message = "symbol id must be alphanumeric and 3-9 characters in length"
+                    message = "symbol id must be alphanumeric and 2-15 characters in length"
             ) String symbol,
             @RequestBody @Valid NewsSubscriptionRequest subscriptionRequest) {
 
@@ -139,7 +139,7 @@ public class SubscriptionController {
     @DeleteMapping("{medium_id}/symbols/{symbol_id}/news/{notification_type}")
     public ResponseEntity<?> deleteNewsSubscription (
             @PathVariable("symbol_id")
-            @Pattern(regexp = SYMBOL_ID_REGEX, message = "symbol id must be alphanumeric and 3-9 characters in length")
+            @Pattern(regexp = SYMBOL_ID_REGEX, message = "symbol id must be alphanumeric and 2-15 characters in length")
             String symbol,
             @PathVariable("notification_type")
             @ValidEnumConstant(enumClazz = NewsType.class)
@@ -171,7 +171,7 @@ public class SubscriptionController {
             String mediumId,
             @PathVariable("symbol")
             @Pattern(regexp = SYMBOL_ID_REGEX,
-                    message = "symbol id must be alphanumeric and 3-9 characters in length"
+                    message = "symbol id must be alphanumeric and 2-15 characters in length"
             ) String symbolId,
             @RequestBody @Valid PriceNotificationRequest priceNotificationRequest
     ) {
@@ -196,7 +196,7 @@ public class SubscriptionController {
     @DeleteMapping("{medium_id}/symbols/{symbol}/price/{notification_type}")
     public ResponseEntity<?> deletePriceNotificationSubscription(
             @Pattern(regexp = SYMBOL_ID_REGEX,
-                    message = "symbol id must be alphanumeric and 3-9 characters in length"
+                    message = "symbol id must be alphanumeric and 2-15 characters in length"
             )
             @PathVariable("symbol") String symbolId,
             @ValidEnumConstant(enumClazz = PriceTargetType.class)

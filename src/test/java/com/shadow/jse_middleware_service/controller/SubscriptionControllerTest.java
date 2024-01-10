@@ -141,7 +141,7 @@ class SubscriptionControllerTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.status").hasJsonPath())
                     .andExpect(jsonPath("$.status").value(HttpStatus.BAD_REQUEST.value()))
-                    .andExpect(jsonPath("$.errors[?(@.error == \"Validation Error\" && @.message == \"newsSubscribe.symbol: symbol id must be alphanumeric and 3-9 characters in length\")]").exists())
+                    .andExpect(jsonPath("$.errors[?(@.error == \"Validation Error\" && @.message == \"newsSubscribe.symbol: symbol id must be alphanumeric and 2-15 characters in length\")]").exists())
                     .andDo(print());
         }
 
@@ -193,10 +193,10 @@ class SubscriptionControllerTest {
         }
         private Stream<Arguments> getInvalidSymbolIds () {
             return Stream.of(
-                    Arguments.of("SCVSDWW.21"),
+                    Arguments.of("SCVSDWW.21652139"),
                     Arguments.of("SCVSDWW@2"),
                     Arguments.of("123456789"),
-                    Arguments.of("DH"),
+                    Arguments.of("D"),
                     Arguments.of((Object) null)
             );
         }
@@ -270,16 +270,16 @@ class SubscriptionControllerTest {
             String validMediumId = "123456789";
             String ValidSymbolId = "SVL";
 
-            String expectedSymbolMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deleteNewsSubscription.symbol: symbol id must be alphanumeric and 3-9 characters in length\")]";
+            String expectedSymbolMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deleteNewsSubscription.symbol: symbol id must be alphanumeric and 2-15 characters in length\")]";
             String expectedMediumIdMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deleteNewsSubscription.mediumId: Invalid medium id format\")]";
             String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deleteNewsSubscription.newsType: Choice Not valid. Valid choices include: "+ CustomEnumUtils.getNames(NewsType.class)+"\")]";
 
             return Stream.of(
                     // Invalid Symbol Parameters
-                    Arguments.of("SCVSDWW.21", validMediumId, NewsType.DIVDEC.toString(), expectedSymbolMessage),
+                    Arguments.of("SCVSDWW.21153642", validMediumId, NewsType.DIVDEC.toString(), expectedSymbolMessage),
                     Arguments.of("SCVSDWW@2", validMediumId, NewsType.DIVDEC.toString(), expectedSymbolMessage),
                     Arguments.of(validMediumId, validMediumId, NewsType.DIVDEC.toString(), expectedSymbolMessage),
-                    Arguments.of("DH", validMediumId, NewsType.DIVDEC.toString(), expectedSymbolMessage),
+                    Arguments.of("D", validMediumId, NewsType.DIVDEC.toString(), expectedSymbolMessage),
                     Arguments.of(null, validMediumId, NewsType.DIVDEC.toString(), expectedSymbolMessage),
 
                     // Invalid Medium ID Parameters
@@ -366,7 +366,7 @@ class SubscriptionControllerTest {
         private Stream<Arguments> getInvalidCreatePriceNotificationSubscriptionRequest () {
             String validSymbol="SVL";
             String validMediumId="123456789";
-            String expectedSymbolMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"createPriceNotificationSubscription.symbolId: symbol id must be alphanumeric and 3-9 characters in length\")]";
+            String expectedSymbolMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"createPriceNotificationSubscription.symbolId: symbol id must be alphanumeric and 2-15 characters in length\")]";
             String expectedMediumIdMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"createPriceNotificationSubscription.mediumId: Invalid medium id format\")]";
             String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"Field: notificationType - Choice Not valid. Valid choices include: "+CustomEnumUtils.getNames(PriceTargetType.class)+"\")]";
 
@@ -374,9 +374,9 @@ class SubscriptionControllerTest {
 
             return Stream.of(
                     // Invalid Symbol Parameters
-                    Arguments.of(validMediumId, "SCVSDWW.21", priceNotificationRequest, expectedSymbolMessage),
+                    Arguments.of(validMediumId, "SCVSDWW.21521545", priceNotificationRequest, expectedSymbolMessage),
                     Arguments.of(validMediumId, "SCVSDWW@2", priceNotificationRequest, expectedSymbolMessage),
-                    Arguments.of(validMediumId, "DH", priceNotificationRequest, expectedSymbolMessage),
+                    Arguments.of(validMediumId, "D", priceNotificationRequest, expectedSymbolMessage),
                     Arguments.of(validMediumId, null, priceNotificationRequest, expectedSymbolMessage),
 
                     // Invalid medium id Parameters
@@ -444,16 +444,16 @@ class SubscriptionControllerTest {
             String validMediumId = "123456789";
             String ValidSymbolId = "SVL";
 
-            String expectedSymbolMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deletePriceNotificationSubscription.symbolId: symbol id must be alphanumeric and 3-9 characters in length\")]";
+            String expectedSymbolMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deletePriceNotificationSubscription.symbolId: symbol id must be alphanumeric and 2-15 characters in length\")]";
             String expectedMediumIdMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deletePriceNotificationSubscription.mediumId: Invalid medium id format\")]";
             String expectedNewsTypeMessage = "$.errors[?(@.error == \"Validation Error\" && @.message == \"deletePriceNotificationSubscription.notificationType: Choice Not valid. Valid choices include: "+CustomEnumUtils.getNames(PriceTargetType.class)+"\")]";
 
             return Stream.of(
                     // Invalid Symbol Parameters
-                    Arguments.of("SCVSDWW.21", validMediumId, PriceTargetType.PRC_VAL_UP_ALL.toString(), expectedSymbolMessage),
+                    Arguments.of("SCVSDWW.21654213", validMediumId, PriceTargetType.PRC_VAL_UP_ALL.toString(), expectedSymbolMessage),
                     Arguments.of("SCVSDWW@2", validMediumId, PriceTargetType.PRC_VAL_UP_ALL.toString(), expectedSymbolMessage),
                     Arguments.of(validMediumId, validMediumId, PriceTargetType.PRC_VAL_UP_ALL.toString(), expectedSymbolMessage),
-                    Arguments.of("DH", validMediumId, PriceTargetType.PRC_VAL_UP_ALL.toString(), expectedSymbolMessage),
+                    Arguments.of("D", validMediumId, PriceTargetType.PRC_VAL_UP_ALL.toString(), expectedSymbolMessage),
                     Arguments.of(null, validMediumId, PriceTargetType.PRC_VAL_UP_ALL.toString(), expectedSymbolMessage),
 
                     // Invalid Medium ID Parameters
