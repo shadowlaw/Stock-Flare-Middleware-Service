@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
-    <contextName>JSE-Middleware-Service</contextName>
+    <contextName>Stock-flare-Middleware-Service</contextName>
     <variable name = "LOG_LOCATION" value = "${LOG_LOCATION:-./logs}"/>
     <variable name = "LOG_FILE" value = "${LOG_LOCATION}/app"/>
     <variable name = "LOG_PATTERN" value = "%d{yyyy-MM-dd HH:mm:ss.SSS, UTC} %contextName ${PID:- } [%6level] [%15.15thread] %-40.40logger{39} [%X]: %m%n%rEx"/>
