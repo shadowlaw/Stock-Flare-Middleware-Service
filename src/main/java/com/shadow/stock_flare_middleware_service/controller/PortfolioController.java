@@ -49,7 +49,7 @@ public class PortfolioController {
     @RequestMapping( value = "{userId}", method = RequestMethod.POST)
     public ResponseEntity<?> createPortfolio(
             @PathVariable(name = "userId")
-            @Pattern(regexp = USER_ID_REGEX)
+            @Pattern(regexp = USER_ID_REGEX, message = "must be numeric")
             String userId,
             @RequestBody @Valid CreatePortfolioRequest requestBody
             ){
