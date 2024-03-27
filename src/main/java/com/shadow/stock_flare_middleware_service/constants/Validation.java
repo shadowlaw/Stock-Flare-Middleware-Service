@@ -6,4 +6,5 @@ public class Validation {
     public static final String USER_ID_REGEX = "\\d+";
     public static final String PORTFOLIO_NICKNAME_REGEX = "^[a-zA-Z0-9_]+$";
     public static final String PORTFOLIO_IDENTIFIER_REGEX = "^[a-zA-Z0-9_]+$";
+    public static final String PORTFOLIO_ID_REGEX = "^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$";
 }
