@@ -5,10 +5,12 @@ import com.shadow.stock_flare_middleware_service.controller.request.CreatePortfo
 import com.shadow.stock_flare_middleware_service.controller.request.CreatePortfolioTradeRequest;
 import com.shadow.stock_flare_middleware_service.controller.response.CreatePortfolioResponse;
 import com.shadow.stock_flare_middleware_service.controller.response.ErrorResponse;
-import com.shadow.stock_flare_middleware_service.controller.response.Response;
+
 import com.shadow.stock_flare_middleware_service.repository.entity.Portfolio;
+import com.shadow.stock_flare_middleware_service.repository.entity.PortfolioTrade;
 import com.shadow.stock_flare_middleware_service.service.PortfolioManagementService;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -25,9 +27,12 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
+import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.Pattern;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import static com.shadow.stock_flare_middleware_service.constants.LoggingConstants.REQUEST_ID;
 import static com.shadow.stock_flare_middleware_service.constants.Validation.PORTFOLIO_ID_REGEX;
@@ -79,7 +84,8 @@ public class PortfolioController {
 
     @Operation(summary = "Create trades for a portfolio", description = "Creates a buy or sell trade for a portfolio")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "201", description = "Trades Created", content = @Content(schema = @Schema(implementation = Response.class))),
+            @ApiResponse(responseCode = "200", description = "Request Processed, no trades created", content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "201", description = "Trades Created", content = @Content(array = @ArraySchema(schema = @Schema(implementation = PortfolioTrade.class)))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "Resource Not Found", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "Internal Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
@@ -90,13 +96,24 @@ public class PortfolioController {
             @Pattern(regexp = PORTFOLIO_ID_REGEX, message = "Invalid portfolio ID")
             @Schema(description = "Unique ID assigned to a portfolio")
             String portfolioId,
-            @RequestBody @Valid List<CreatePortfolioTradeRequest> portfolioTradeRequest
+            @RequestBody @Valid
+            @NotEmpty(message = "At least 1 tade is required")
+            List<CreatePortfolioTradeRequest> portfolioTradeRequest
     ) {
 
         MDC.put(REQUEST_ID, "CREATE_TRADE");
-        log.info(portfolioId, portfolioTradeRequest.toString());
 
+        List<PortfolioTrade> portfolioTrades =  portfolioTradeRequest.stream().map(tradeRequest ->
+                portfolioManagementService.createTrade(portfolioId, tradeRequest.getSymbolId(), tradeRequest.getNoOfUnits(),
+                        tradeRequest.getAmountPerUnit(), tradeRequest.getType(), tradeRequest.getTransactionDate(), tradeRequest.getTaxes(), tradeRequest.getBrokerFees(),
+                        tradeRequest.getOtherFees()))
+                .filter(Objects::nonNull).collect(Collectors.toList());
 
-        return ResponseEntity.ok(portfolioTradeRequest);
+        if (portfolioTrades.isEmpty()) {
+            log.error("Trade request creation failed. No trades created.");
+            return ResponseEntity.ok().build();
+        }
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(portfolioTrades);
     }
 }

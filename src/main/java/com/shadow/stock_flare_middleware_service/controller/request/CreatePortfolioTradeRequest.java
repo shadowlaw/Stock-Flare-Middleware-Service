@@ -1,5 +1,6 @@
 package com.shadow.stock_flare_middleware_service.controller.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import com.shadow.stock_flare_middleware_service.annotations.ValidEnumConstant;
 import com.shadow.stock_flare_middleware_service.constants.TradeType;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -9,6 +10,7 @@ import lombok.RequiredArgsConstructor;
 import javax.validation.constraints.*;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 
 import static com.shadow.stock_flare_middleware_service.constants.Validation.SYMBOL_ID_REGEX;
 
@@ -37,6 +39,11 @@ public class CreatePortfolioTradeRequest {
     @ValidEnumConstant(enumClazz = TradeType.class)
     @NotBlank(message = "This field is required")
     private String type;
+
+    @Schema(description = "Date the transaction was settled. Use date format yyy-MM-dd", example = "yyyy-MM-dd")
+    @NotNull(message = "This field is required")
+    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
+    private LocalDate transactionDate;
 
     @Schema(description = "Taxes paid on trade")
     @DecimalMin(value = "0.0", message = "Minimum value must be 0 or greater and can be fractional")

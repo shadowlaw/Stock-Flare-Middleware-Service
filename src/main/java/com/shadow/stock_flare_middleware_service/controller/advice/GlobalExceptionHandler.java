@@ -1,5 +1,7 @@
 package com.shadow.stock_flare_middleware_service.controller.advice;
 
+
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
 import com.shadow.stock_flare_middleware_service.controller.response.Error;
 import com.shadow.stock_flare_middleware_service.controller.response.ErrorResponse;
 import com.shadow.stock_flare_middleware_service.exception.ResourceConflictException;
@@ -8,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,17 +25,22 @@ public class GlobalExceptionHandler {
 
     Logger logger = LoggerFactory.getLogger(GlobalExceptionHandler.class);
 
-    @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class})
+    @ExceptionHandler({MethodArgumentNotValidException.class, ConstraintViolationException.class, HttpMessageNotReadableException.class})
     public ResponseEntity<ErrorResponse> handleValidationException(Exception validException, HttpServletRequest request){
         List<Error> errors = new ArrayList<>();
 
         if (validException instanceof ConstraintViolationException) {
             errors.add(new Error("Validation Error", validException.getMessage()));
-        } else {
+        } else if (validException instanceof MethodArgumentNotValidException) {
             MethodArgumentNotValidException exception = (MethodArgumentNotValidException) validException;
             exception.getBindingResult()
                     .getFieldErrors()
                     .forEach(error -> errors.add(new Error("Validation Error", String.format("Field: %s - %s", error.getField(), error.getDefaultMessage()))));
+        } else if (validException.getCause() instanceof InvalidFormatException){
+            InvalidFormatException formatException = (InvalidFormatException) validException.getCause();
+            errors.add(new Error("Field Format Error", String.format("Invalid value provided [%s]", formatException.getValue())));
+        } else {
+            errors.add(new Error("Bad Request", "Unable to process request"));
         }
 
         ErrorResponse errorResponse = new ErrorResponse(HttpStatus.BAD_REQUEST.value(), errors, request.getRequestURI());
