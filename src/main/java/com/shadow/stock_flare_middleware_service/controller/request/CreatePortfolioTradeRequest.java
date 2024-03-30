@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 import com.shadow.stock_flare_middleware_service.annotations.ValidEnumConstant;
 import com.shadow.stock_flare_middleware_service.constants.TradeType;
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.RequiredArgsConstructor;
 
 import javax.validation.constraints.*;
 
@@ -15,7 +15,7 @@ import java.time.LocalDate;
 import static com.shadow.stock_flare_middleware_service.constants.Validation.SYMBOL_ID_REGEX;
 
 @Data
-@RequiredArgsConstructor
+@AllArgsConstructor
 public class CreatePortfolioTradeRequest {
 
     @Schema(description = "Ticker/Symbol ID for an investment instrument")

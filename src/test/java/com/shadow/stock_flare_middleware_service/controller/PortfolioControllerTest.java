@@ -1,10 +1,12 @@
 package com.shadow.stock_flare_middleware_service.controller;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.shadow.stock_flare_middleware_service.controller.request.CreatePortfolioRequest;
+import com.shadow.stock_flare_middleware_service.controller.request.CreatePortfolioTradeRequest;
+import com.shadow.stock_flare_middleware_service.util.gson_adapters.LocalDateTypeAdapter;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
@@ -18,6 +20,11 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.stream.Stream;
 
 import static com.shadow.stock_flare_middleware_service.constants.TestConstants.PORTFOLIO_MANAGEMENT_ENDPOINTS;
@@ -34,7 +41,7 @@ class PortfolioControllerTest {
     @Autowired
     MockMvc mockMvc;
 
-    Gson gson = new Gson();
+    Gson gson = new GsonBuilder().registerTypeAdapter(LocalDate.class, new LocalDateTypeAdapter()).create();
 
     @Value("${spring.security.user.name}")
     private String username;
@@ -83,8 +90,128 @@ class PortfolioControllerTest {
                     Arguments.of("1", new CreatePortfolioRequest("Test_Portfolio", "1", "STOCK"), HttpStatus.CREATED.value(), "[?(@.name == \"Test_Portfolio\" && @.number == \"1\" && @.type == \"STOCK\")]")
             );
         }
+    }
 
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @Nested
+    @DisplayName("Portfolio Trade Tests")
+    class PortfolioTradeTest{
+        @ParameterizedTest
+        @MethodSource("createTradeInputParams")
+        @DisplayName("Create portfolio trade based on params")
+        public void testCreatePortfolioTradeGivenInputTheProcessRequestBasedOnParams(String portfolioId, List<CreatePortfolioTradeRequest> request, Integer expectedStatus, String expectedResponse) throws Exception {
+            mockMvc.perform(
+                    MockMvcRequestBuilders
+                            .post(String.format("%s/%s/trade", PORTFOLIO_MANAGEMENT_ENDPOINTS, portfolioId))
+                            .header("Authorization", getBasicAuthenticationHeader(username, password))
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .accept(MediaType.APPLICATION_JSON)
+                            .content(gson.toJson(request))
+            )
+                    .andExpect(status().is(expectedStatus))
+                    .andExpect(jsonPath("$.status").hasJsonPath())
+                    .andExpect(jsonPath("$.status").value(expectedStatus))
+                    .andExpect(jsonPath(expectedResponse).exists())
+                    .andDo(print());
+        }
 
+        public Stream<Arguments> createTradeInputParams() {
+            return Stream.of(
+                    // Invalid portfolio ID test params
+                    Arguments.of("0b21350-a5e8-4b3d-b900-f2a237d38ba5", Collections.singletonList(new CreatePortfolioRequest()), HttpStatus.BAD_REQUEST.value(), "$.errors[?(@.error == \"Validation Error\" && @.message == \"createTrade.portfolioId: Invalid portfolio ID\")]"),
+                    // Empty trade request test params
+                    Arguments.of("0eb21350-a5e8-4b3d-b900-f2a237d38ba5", new ArrayList<>(), HttpStatus.BAD_REQUEST.value(), "$.errors[?(@.error == \"Validation Error\" && @.message == \"createTrade.portfolioTradeRequest: At least 1 tade is required\")]"),
 
+                    // Invalid symbol Id tests
+                    Arguments.of("0eb21350-a5e8-4b3d-b900-f2a237d38ba5",
+                            Collections.singletonList(new CreatePortfolioTradeRequest("SCVSDWW.21654213", new BigDecimal(1), new BigDecimal(1), "BUY", LocalDate.now(), null, null, null)),
+                            HttpStatus.BAD_REQUEST.value(),
+                            "$.errors[?(@.error == \"Validation Error\" && @.message == \"createTrade.portfolioTradeRequest[0].symbolId: Symbol id must be alphanumeric and 2-15 characters in length\")]"
+                    ),
+                    Arguments.of("0eb21350-a5e8-4b3d-b900-f2a237d38ba5",
+                            Collections.singletonList(new CreatePortfolioTradeRequest("SCVSDWW@2", new BigDecimal(1), new BigDecimal(1), "BUY", LocalDate.now(), null, null, null)),
+                            HttpStatus.BAD_REQUEST.value(),
+                            "$.errors[?(@.error == \"Validation Error\" && @.message == \"createTrade.portfolioTradeRequest[0].symbolId: Symbol id must be alphanumeric and 2-15 characters in length\")]"
+                    ),
+                    Arguments.of("0eb21350-a5e8-4b3d-b900-f2a237d38ba5",
+                            Collections.singletonList(new CreatePortfolioTradeRequest("D", new BigDecimal(1), new BigDecimal(1), "BUY", LocalDate.now(), null, null, null)),
+                            HttpStatus.BAD_REQUEST.value(),
+                            "$.errors[?(@.error == \"Validation Error\" && @.message == \"createTrade.portfolioTradeRequest[0].symbolId: Symbol id must be alphanumeric and 2-15 characters in length\")]"
+                    ),
+                    Arguments.of("0eb21350-a5e8-4b3d-b900-f2a237d38ba5",
+                            Collections.singletonList(new CreatePortfolioTradeRequest(null, new BigDecimal(1), new BigDecimal(1), "BUY", LocalDate.now(), null, null, null)),
+                            HttpStatus.BAD_REQUEST.value(),
+                            "$.errors[?(@.error == \"Validation Error\" && @.message == \"createTrade.portfolioTradeRequest[0].symbolId: This field is required\")]"
+                    ),
+
+                    // Invalid number of units params
+                    Arguments.of("0eb21350-a5e8-4b3d-b900-f2a237d38ba5",
+                            Collections.singletonList(new CreatePortfolioTradeRequest("GHL", new BigDecimal(0), new BigDecimal(1), "BUY", LocalDate.now(), null, null, null)),
+                            HttpStatus.BAD_REQUEST.value(),
+                            "$.errors[?(@.error == \"Validation Error\" && @.message == \"createTrade.portfolioTradeRequest[0].noOfUnits: Minimum value must be greater than 0 and can be fractional\")]"
+                    ),
+                    Arguments.of("0eb21350-a5e8-4b3d-b900-f2a237d38ba5",
+                            Collections.singletonList(new CreatePortfolioTradeRequest("GHL", new BigDecimal("1.342"), new BigDecimal(1), "BUY", LocalDate.now(), null, null, null)),
+                            HttpStatus.BAD_REQUEST.value(),
+                            "$.errors[?(@.error == \"Validation Error\" && @.message == \"createTrade.portfolioTradeRequest[0].noOfUnits: Number exceeds allowed value\")]"
+                    ),
+                    Arguments.of("0eb21350-a5e8-4b3d-b900-f2a237d38ba5",
+                            Collections.singletonList(new CreatePortfolioTradeRequest("GHL", null, new BigDecimal(1), "BUY", LocalDate.now(), null, null, null)),
+                            HttpStatus.BAD_REQUEST.value(),
+                            "$.errors[?(@.error == \"Validation Error\" && @.message == \"createTrade.portfolioTradeRequest[0].noOfUnits: This field is required\")]"
+                    ),
+
+                    // Invalid amount per unit params
+                    Arguments.of("0eb21350-a5e8-4b3d-b900-f2a237d38ba5",
+                            Collections.singletonList(new CreatePortfolioTradeRequest("GHL", new BigDecimal(1), new BigDecimal(0), "BUY", LocalDate.now(), null, null, null)),
+                            HttpStatus.BAD_REQUEST.value(),
+                            "$.errors[?(@.error == \"Validation Error\" && @.message == \"createTrade.portfolioTradeRequest[0].amountPerUnit: Minimum value must be greater than 0 and can be fractional\")]"
+                    ),
+                    Arguments.of("0eb21350-a5e8-4b3d-b900-f2a237d38ba5",
+                            Collections.singletonList(new CreatePortfolioTradeRequest("GHL", new BigDecimal(1), new BigDecimal("1.342"), "BUY", LocalDate.now(), null, null, null)),
+                            HttpStatus.BAD_REQUEST.value(),
+                            "$.errors[?(@.error == \"Validation Error\" && @.message == \"createTrade.portfolioTradeRequest[0].amountPerUnit: Number exceeds allowed value\")]"
+                    ),
+                    Arguments.of("0eb21350-a5e8-4b3d-b900-f2a237d38ba5",
+                            Collections.singletonList(new CreatePortfolioTradeRequest("GHL",  new BigDecimal(1), null, "BUY", LocalDate.now(), null, null, null)),
+                            HttpStatus.BAD_REQUEST.value(),
+                            "$.errors[?(@.error == \"Validation Error\" && @.message == \"createTrade.portfolioTradeRequest[0].amountPerUnit: This field is required\")]"
+                    ),
+
+                    // Invalid Trade Type Params
+                    Arguments.of("0eb21350-a5e8-4b3d-b900-f2a237d38ba5",
+                            Collections.singletonList(new CreatePortfolioTradeRequest("GHL", new BigDecimal(1), new BigDecimal(1), "INVALID", LocalDate.now(), null, null, null)),
+                            HttpStatus.BAD_REQUEST.value(),
+                            "$.errors[?(@.error == \"Validation Error\" && @.message == \"createTrade.portfolioTradeRequest[0].type: Choice Not valid. Valid choices include: BUY, SELL\")]"
+                    ),
+                    Arguments.of("0eb21350-a5e8-4b3d-b900-f2a237d38ba5",
+                            Collections.singletonList(new CreatePortfolioTradeRequest("GHL",  new BigDecimal(1), new BigDecimal(1), null, LocalDate.now(), null, null, null)),
+                            HttpStatus.BAD_REQUEST.value(),
+                            "$.errors[?(@.error == \"Validation Error\" && @.message == \"createTrade.portfolioTradeRequest[0].type: This field is required\")]"
+                    ),
+
+                    // Invalid Date Params
+                    Arguments.of("0eb21350-a5e8-4b3d-b900-f2a237d38ba5",
+                            Collections.singletonList(new CreatePortfolioTradeRequest("GHL",  new BigDecimal(1), new BigDecimal(1), "BUY", null, null, null, null)),
+                            HttpStatus.BAD_REQUEST.value(),
+                            "$.errors[?(@.error == \"Validation Error\" && @.message == \"createTrade.portfolioTradeRequest[0].transactionDate: This field is required\")]"
+                    ),
+
+                    // Failure params if portfolio does not exist
+                    Arguments.of("0eb21350-a5e8-4b3d-b900-f2a237d38ba4",
+                            Collections.singletonList(new CreatePortfolioTradeRequest("GHL",  new BigDecimal(1), new BigDecimal(1), "BUY", LocalDate.now(), null, null, null)),
+                            HttpStatus.NOT_FOUND.value(),
+                            "$.errors[?(@.error == \"Error\" && @.message == \"Unknown portfolio ID\")]"
+                    ),
+
+                    //Successful portfolio trade created
+                    Arguments.of("0eb21350-a5e8-4b3d-b900-f2a237d38ba5",
+                            Collections.singletonList(new CreatePortfolioTradeRequest("GHL",  new BigDecimal(1), new BigDecimal(1), "BUY", LocalDate.now(), null, null, null)),
+                            HttpStatus.CREATED.value(),
+                            "$.trades[?(@.symbol == \"GHL\")]"
+                    )
+            );
+
+        }
     }
 }

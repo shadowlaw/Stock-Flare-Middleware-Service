@@ -30,7 +30,12 @@ public class GlobalExceptionHandler {
         List<Error> errors = new ArrayList<>();
 
         if (validException instanceof ConstraintViolationException) {
-            errors.add(new Error("Validation Error", validException.getMessage()));
+            ((ConstraintViolationException) validException).getConstraintViolations()
+                    .forEach(violation ->
+                            errors.add(new Error("Validation Error",
+                                    String.format("%s: %s", violation.getPropertyPath(), violation.getMessage()))
+                            )
+                    );
         } else if (validException instanceof MethodArgumentNotValidException) {
             MethodArgumentNotValidException exception = (MethodArgumentNotValidException) validException;
             exception.getBindingResult()

@@ -4,6 +4,7 @@ import com.shadow.stock_flare_middleware_service.constants.PortfolioType;
 import com.shadow.stock_flare_middleware_service.controller.request.CreatePortfolioRequest;
 import com.shadow.stock_flare_middleware_service.controller.request.CreatePortfolioTradeRequest;
 import com.shadow.stock_flare_middleware_service.controller.response.CreatePortfolioResponse;
+import com.shadow.stock_flare_middleware_service.controller.response.CreatePortfolioTradeResponse;
 import com.shadow.stock_flare_middleware_service.controller.response.ErrorResponse;
 
 import com.shadow.stock_flare_middleware_service.repository.entity.Portfolio;
@@ -85,7 +86,7 @@ public class PortfolioController {
     @Operation(summary = "Create trades for a portfolio", description = "Creates a buy or sell trade for a portfolio")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Request Processed, no trades created", content = @Content(schema = @Schema(hidden = true))),
-            @ApiResponse(responseCode = "201", description = "Trades Created", content = @Content(array = @ArraySchema(schema = @Schema(implementation = PortfolioTrade.class)))),
+            @ApiResponse(responseCode = "201", description = "Trades Created", content = @Content(schema = @Schema(implementation = CreatePortfolioTradeResponse.class))),
             @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "Resource Not Found", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "Internal Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
@@ -114,6 +115,6 @@ public class PortfolioController {
             return ResponseEntity.ok().build();
         }
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(portfolioTrades);
+        return ResponseEntity.status(HttpStatus.CREATED).body(new CreatePortfolioTradeResponse(HttpStatus.CREATED.value(), portfolioTrades));
     }
 }
