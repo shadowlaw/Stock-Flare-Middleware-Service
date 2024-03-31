@@ -15,7 +15,7 @@ CREATE TABLE `notification_medium_type` (
 
 -- Alter tables to add columns not included in entities
 ALTER TABLE symbol add del_flg tinyint(1) NOT NULL DEFAULT 0;
-
+ALTER TABLE portfolio add del_flag CHAR(10) NOT NULL DEFAULT 'N';
 
 -- Insert initial data
 INSERT INTO news_type (id, nt_name, nt_description, del_flg) VALUES('DIVDEC', 'Dividends Declaration', 'Company declaration of dividends payment', 0);
@@ -45,3 +45,5 @@ INSERT INTO notification_subscription (symbol, notif_type, medium_id) VALUES ('T
 INSERT INTO notification_subscription (symbol, notif_type, medium_id) VALUES ('CPFV', 'DIVDEC', '927362871');
 INSERT INTO notification_subscription (symbol, notif_type, medium_id) VALUES ('CPJ', 'PRC_VAL_UP_ALL', '927362871');
 INSERT INTO notification_subscription (symbol, notif_type, medium_id) VALUES ('BRG', 'DIVDEC', '927362871');
+
+INSERT INTO portfolio (id, user_id, nickname, external_identifier, account_type, del_flag) VALUES ('0eb21350-a5e8-4b3d-b900-f2a237d38ba5', '1', 'Test portfolio', '965842302', 'STOCK', 'N');
