@@ -1,5 +1,7 @@
 package com.shadow.stock_flare_middleware_service.repository.entity;
 
+import com.fasterxml.jackson.annotation.JsonUnwrapped;
+import com.shadow.stock_flare_middleware_service.repository.entity.key.DividendPaymentKey;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -20,12 +22,10 @@ import java.math.BigDecimal;
 @Data
 public class DividendPayment {
 
-    @Id
-    @Column(name = "symbol")
-    private String symbol;
 
-    @Column(name = "record_date")
-    private String recordDate;
+    @EmbeddedId
+    @JsonUnwrapped
+    DividendPaymentKey key;
 
     @Column(name = "ex_date")
     private String exDate;

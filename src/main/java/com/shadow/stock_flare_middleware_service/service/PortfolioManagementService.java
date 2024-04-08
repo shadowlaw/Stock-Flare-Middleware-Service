@@ -1,5 +1,6 @@
 package com.shadow.stock_flare_middleware_service.service;
 
+import com.shadow.stock_flare_middleware_service.exception.RequestDateRangeException;
 import com.shadow.stock_flare_middleware_service.exception.ResourceNotFoundException;
 import com.shadow.stock_flare_middleware_service.repository.DividendPaymentRepository;
 import com.shadow.stock_flare_middleware_service.repository.PortfolioRepository;
@@ -11,14 +12,18 @@ import com.shadow.stock_flare_middleware_service.repository.entity.PortfolioTrad
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Optional;
 
+import static com.shadow.stock_flare_middleware_service.util.CustomLocalDateUtils.addDays;
+import static java.time.temporal.ChronoUnit.DAYS;
 import static java.util.Objects.isNull;
 
 @Service
@@ -36,7 +41,10 @@ public class PortfolioManagementService {
     private PortfolioTradeRepository portfolioTradeRepository;
 
     @Autowired
-    DividendPaymentRepository dividendPaymentRepository;
+    private DividendPaymentRepository dividendPaymentRepository;
+
+    @Value("${app.api.portfolio.dividend.default_date_range_days}")
+    private long dividendDefaultDateRange;
 
     public Optional<Portfolio> createPortfolio(String userId, String name, String number, String type) {
         log.info("creating portfolio with name [{}] for user with id [{}]", name, userId);
@@ -95,6 +103,16 @@ public class PortfolioManagementService {
     @Transactional
     public List<DividendPayment> getDividends(String portfolioId, String symbolId, LocalDate paymentStartDate, LocalDate paymentEndDate) {
         log.info("Retrieving dividend payments");
+
+        paymentStartDate = !isNull(paymentStartDate) ? paymentStartDate : !isNull(paymentEndDate) ? addDays(paymentEndDate, -dividendDefaultDateRange):  addDays(LocalDate.now(), -dividendDefaultDateRange);
+        paymentEndDate = !isNull(paymentEndDate) ? paymentEndDate : LocalDate.now();
+
+        long dateDiff = DAYS.between(paymentStartDate, paymentEndDate);
+
+        if (dateDiff > dividendDefaultDateRange) {
+            log.error("Date range provided [{}] is greater than date constraint [{}] days", dateDiff, dividendDefaultDateRange);
+            throw new RequestDateRangeException(String.format("Date range provided greater then [%s] days", dividendDefaultDateRange));
+        }
 
         if (!portfolioRepository.existsById(portfolioId)) {
             log.error("unable to find portfolio with id [{}]", portfolioId);

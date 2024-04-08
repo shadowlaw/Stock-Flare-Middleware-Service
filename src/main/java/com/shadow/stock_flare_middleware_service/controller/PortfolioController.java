@@ -122,8 +122,8 @@ public class PortfolioController {
 
     @Operation(summary = "Retrieve dividend payment by portfolio", description = "Retrieve dividend payments by portfolio.")
     @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "Request processed. A list of payment data is returned if found, otherwise, an empty list", content = @Content(array = @ArraySchema(arraySchema = @Schema(implementation = DividendPayment.class)))),
-            @ApiResponse(responseCode = "400", description = "Bad Request", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
+            @ApiResponse(responseCode = "200", description = "Request processed. A list of payment data is returned if found, otherwise, an empty list", content = @Content(mediaType = MediaType.APPLICATION_JSON_VALUE, array = @ArraySchema(schema = @Schema(implementation = DividendPayment.class)))),
+            @ApiResponse(responseCode = "400", description = "Bad Request. One or more request constraints have been violated.", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "404", description = "Resource Not Found", content = @Content(schema = @Schema(implementation = ErrorResponse.class))),
             @ApiResponse(responseCode = "500", description = "Internal Error", content = @Content(schema = @Schema(implementation = ErrorResponse.class)))
     })
