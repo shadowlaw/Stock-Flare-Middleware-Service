@@ -19,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import org.springframework.util.LinkedMultiValueMap;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
@@ -48,6 +49,9 @@ class PortfolioControllerTest {
 
     @Value("${spring.security.user.password}")
     private String password;
+
+    @Value("${app.api.portfolio.dividend.default_date_range_days}")
+    long dividendPaymentRange;
 
     @TestInstance(TestInstance.Lifecycle.PER_CLASS)
     @Nested
@@ -212,6 +216,49 @@ class PortfolioControllerTest {
                     )
             );
 
+        }
+    }
+
+
+    @TestInstance(TestInstance.Lifecycle.PER_CLASS)
+    @Nested
+    @DisplayName("Get Dividend Payments Tests")
+    class GetDividendPayments{
+
+        @ParameterizedTest
+        @MethodSource("getDividendPaymentsParams")
+        @DisplayName("Retrieve dividend payment based on param")
+        public void testGetDividendPaymentsGivenInputTheProcessRequestBasedOnParams(
+                String symbol, String startDate, String endDate, String portfolioId, Integer expectedStatus, String expectedResponse
+        ) throws Exception {
+            LinkedMultiValueMap<String, String> params = new LinkedMultiValueMap<>();
+            params.add("symbol", symbol);
+            params.add("start-date", startDate);
+            params.add("end-date", endDate);
+
+            mockMvc.perform(
+                            MockMvcRequestBuilders
+                                    .get(String.format("%s/%s/dividend", PORTFOLIO_MANAGEMENT_ENDPOINTS, portfolioId))
+                                    .header("Authorization", getBasicAuthenticationHeader(username, password))
+                                    .contentType(MediaType.APPLICATION_JSON)
+                                    .params(params)
+                                    .accept(MediaType.APPLICATION_JSON)
+                    )
+                    .andExpect(status().is(expectedStatus))
+                    .andExpect(jsonPath("$.status").hasJsonPath())
+                    .andExpect(jsonPath("$.status").value(expectedStatus))
+                    .andExpect(jsonPath(expectedResponse).exists())
+                    .andDo(print());
+        }
+
+        public Stream<Arguments> getDividendPaymentsParams() {
+            return Stream.of(
+                    // unknown portfolio id test params
+                    Arguments.of("SVL", "2023-01-01", "2023-01-01", "0eb21350-a5e8-4b3d-b900-f2a237d38ba4", HttpStatus.NOT_FOUND.value(), "$.errors[?(@.error == \"Error\" && @.message == \"Unknown portfolio ID\")]"),
+
+                    // date range too large test params
+                    Arguments.of("SVL", "2023-01-01", LocalDate.of(2023, 1, 1).plusDays(dividendPaymentRange+1).toString(), "0eb21350-a5e8-4b3d-b900-f2a237d38ba5", HttpStatus.BAD_REQUEST.value(), String.format("$.errors[?(@.error == \"Error\" && @.message == \"Date range provided greater then [%s] days\")]", dividendPaymentRange))
+            );
         }
     }
 }
