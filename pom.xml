@@ -9,10 +9,10 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.shadow</groupId>
-	<artifactId>jse-middleware-service</artifactId>
+	<artifactId>stockflare-middleware-service</artifactId>
 	<version>0.3.2</version>
-	<name>JSE Middleware Service</name>
-	<description>A middleware API service for JSE info system</description>
+	<name>Stock Flare Middleware Service</name>
+	<description>REST API serves clients of the Stock Flare application.</description>
 	<properties>
 		<java.version>11</java.version>
 	</properties>
