@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.shadow</groupId>
 	<artifactId>stockflare-middleware-service</artifactId>
-	<version>0.4.0</version>
+	<version>0.4.1</version>
 	<name>Stock Flare Middleware Service</name>
 	<description>REST API serves clients of the Stock Flare application.</description>
 	<properties>

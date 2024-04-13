@@ -1,6 +1,4 @@
-# Release Notes for v0.4.0
+# Release Notes for v0.4.1
 
-# New:
-- Creating portfolio
-- Creating BUY/SELL trades
-- Retrieving dividend payments for portfolio
+# Fixes:
+- make dividend payment search default date range configurable
