@@ -1,4 +1,6 @@
-# Release Notes for v0.3.2
+# Release Notes for v0.4.0
 
-# Bugfix:
-- modify symbol id validation  
+# New:
+- Creating portfolio
+- Creating BUY/SELL trades
+- Retrieving dividend payments for portfolio
